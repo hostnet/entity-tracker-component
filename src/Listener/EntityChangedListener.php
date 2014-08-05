@@ -46,9 +46,13 @@ class EntityChangedListener
     }
 
     /**
-     * Pre Flush event callback. Check if the object is managed (meaning it is
-     * changed, since it is in the UnitOfWork) and create a mutation and add
-     * it to the UnitOfWork.
+     * Pre Flush event callback
+     * 
+     * Checks if the entity contains an @Tracked (or derived)
+     * annotation. If so, it will attempt to calculate changes
+     * made and dispatch 'Events::entityChanged' with the current
+     * and original entity states. Note that the original entity
+     * is not managed.
      *
      * @param PreFlushEventArgs $event
      */
