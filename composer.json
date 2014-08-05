@@ -1,7 +1,7 @@
 {
     "name": "hostnet/entity-tracker-component",
     "description": "Provides an event when a Tracked entity changes",
-    "license": "EPL-2.0",
+    "license": "EPL-1.0",
     "require": {
         "php"                  : "5.*, >=5.4",
         "doctrine/common"      : "2.*, >=2.4",
