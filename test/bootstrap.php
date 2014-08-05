@@ -1,0 +1,6 @@
+<?php
+$loader = include __DIR__ . '/../vendor/autoload.php';
+
+use Doctrine\Common\Annotations\AnnotationRegistry;
+
+AnnotationRegistry::registerLoader([$loader, 'loadClass']);

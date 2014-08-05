@@ -1,0 +1,35 @@
+{
+    "name": "hostnet/entity-tracker-component",
+    "description": "Provides an event when a Tracked entity changes",
+    "license": "EPL-2.0",
+    "require": {
+        "php"                  : "5.*, >=5.4",
+        "doctrine/common"      : "2.*, >=2.4",
+        "doctrine/annotations" : "1.*, >=1.2",
+        "doctrine/orm"         : "2.*, >=2.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit"   : "4.*"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+           "Hostnet\\Component\\EntityTracker\\" : "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+           "Hostnet\\Component\\EntityTracker\\" : "test/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Iltar van der Berg",
+            "email": "ivanderberg@hostnet.nl"
+        },
+        {
+            "name": "Yannick de Lange",
+            "email": "ydelange@hostnet.nl"
+        }
+    ]
+}
