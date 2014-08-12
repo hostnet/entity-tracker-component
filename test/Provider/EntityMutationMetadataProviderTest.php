@@ -7,8 +7,7 @@ use Hostnet\Component\EntityTracker\Mocked\MockEntity;
 
 /**
  * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- * @covers ::__construct
- * @coversDefaultClass Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider
+ * @covers Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider
  */
 class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 {
@@ -31,9 +30,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
             ->willReturn($this->uow);
     }
 
-    /**
-     * @covers ::createOriginalEntity
-     */
     public function testCreateOriginalEntity()
     {
         $entity   = new MockEntity();
@@ -58,9 +54,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         $provider->createOriginalEntity($this->em, $entity);
     }
 
-    /**
-     * @covers ::createOriginalEntity
-     */
     public function testCreateOriginalEntityEmpty()
     {
         $entity   = new MockEntity();
@@ -81,8 +74,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::getMutatedFields
-     * @covers ::hasAssociationChanged
      * @dataProvider getMutatedFieldsProvider
      */
     public function testGetMutatedFieldsId($entity_id, $original_id, $expected_changes)
@@ -109,8 +100,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::getMutatedFields
-     * @covers ::hasAssociationChanged
      * @dataProvider getMutatedFieldsProvider
      */
     public function testGetMutatedFieldsParent($entity_id, $original_id, $expected_changes)
@@ -147,9 +136,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertCount($expected_changes, $provider->getMutatedFields($this->em, $entity, $original));
     }
 
-    /**
-     * @covers ::getMutatedFields
-     */
     public function testGetMutatedFieldsEmpty()
     {
         $entity   = new MockEntity();
@@ -178,7 +164,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::getFullChangeSet
      * @dataProvider getFullChangeSetProvider
      */
     public function testGetFullChangeSet($changes, $inserts, $expected_size)
@@ -212,9 +197,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @covers ::isEntityManaged
-     */
     public function testIsEntityManaged()
     {
         $entity = new MockEntity();

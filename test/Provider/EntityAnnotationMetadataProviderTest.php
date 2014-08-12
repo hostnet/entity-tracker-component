@@ -7,8 +7,7 @@ use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 
 /**
  * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- * @covers ::__construct
- * @coversDefaultClass Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider
+ * @covers Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider
  */
 class EntityAnnotationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 {
@@ -24,7 +23,6 @@ class EntityAnnotationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::isTracked
      * @dataProvider isTrackedProvider
      */
     public function testIsTracked($entity, $expected_output)
@@ -61,7 +59,6 @@ class EntityAnnotationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::getAnnotationFromEntity
      * @dataProvider getAnnotationFromEntityProvider
      * @param mixed $entity
      * @param mixed $annotation

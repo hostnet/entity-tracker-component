@@ -15,8 +15,7 @@ use Doctrine\ORM\UnitOfWork;
  *
  * @author Yannick de Lange <ydelange@hostnet.nl>
  * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- * @covers ::__construct
- * @coversDefaultClass Hostnet\Component\EntityTracker\Listener\EntityChangedListener
+ * @covers Hostnet\Component\EntityTracker\Listener\EntityChangedListener
  */
 class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
 {
@@ -61,9 +60,6 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    /**
-     * @covers ::preFlush
-     */
     public function testPreFlushNoAnnotation()
     {
         $entity = new \stdClass();
@@ -84,9 +80,6 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
 
-    /**
-     * @covers ::preFlush
-     */
     public function testPreFlushEmptyChanges()
     {
         $this->meta_mutation_provider
@@ -106,9 +99,6 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
 
-    /**
-     * @covers ::preFlush
-     */
     public function testPreFlushUnmanaged()
     {
         $entity = new \stdClass();
@@ -134,9 +124,6 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
 
-    /**
-     * @covers ::preFlush
-     */
     public function testPreFlushWithoutMutatedFields()
     {
         $entity   = new \stdClass();
@@ -170,9 +157,6 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
 
-    /**
-     * @covers ::preFlush
-     */
     public function testPreFlushWithMutatedFields()
     {
         $entity       = new \stdClass();
