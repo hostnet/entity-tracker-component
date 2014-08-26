@@ -12,7 +12,7 @@ Let's say that every time you flush your User, you want to set when it was updat
 
 Requirements
 ------------
-The tracker component requires a minimal php version of 5.4 and runs on Doctrine2. For specific requirements, please check [composer.json](../blob/master/composer.json)
+The tracker component requires a minimal php version of 5.4 and runs on Doctrine2. For specific requirements, please check [composer.json](../master/composer.json)
 
 Installation
 ------------
