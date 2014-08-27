@@ -1,14 +1,31 @@
 README
 ======
 
+ - [What is the Entity Tracker?](#what-is-the-entity-tracker)
+ - [Requirements](#requirements)
+ - [Installation](#installation)
+
+### Documentation
+   - [How does it work?](#how-does-it-work)
+   - [Setup](#setup)
+     - [Registering the Events](#registering-the-events)
+     - [Creating the Listener](#creating-the-listener)
+     - [Creating an Interface for the Entity](#creating-an-interface-for-the-entity)
+     - [Registering the Annotation on the Entity](#registering-the-annotation-on-the-entity)
+     - [What's Next?](#whats-next)
+     - [Extending the Tracker Annotation](#extending-the-tracker-annotation)
+   - [Extending the Tracker Annotation](#extending-the-tracker-annotation)
+     - [Example Annotation](#example-annotation)
+     - [Custom Annotation Resolvers](#custom-annotation-resolvers)
+     - [Custom entityChanged Listener](#custom-entitychanged-listener)
 
 What is the Entity Tracker?
 ---------------------------
-The Entity Tracker Component is a library used to track entity changes during an Entity Flush. This makes it possible to do all sorts of things you want to automated during the `preFlush` event.
+The Entity Tracker Component is a library used to track changes within an Entity during a flush of the EntityManager. This makes it possible to do all sorts of things you want to automated during the `preFlush` event.
 
 Entities become tracked when you implement the `@Tracked` annotation or a sub-class of `@Tracked`. You have total control over what happens next and which events you will use to listen to the `entityChanged` event.
 
-Let's say that every time you flush your User, you want to set when it was updated. By default standards, you would have to call `$user->setUpdatedAt()` manually or create a custom listener on preFlush that sets the updated at. Both are a lot of extra work and you have to write extra code to determine changes. Listening to preFlush will always trigger your updated at and you don't want to make a huge if statement nor create a listener for each entity.
+Let's say that every time you flush your User, you want to set when it was updated. By default standards, you would have to call `$user->setUpdatedAt()` manually or create a custom listener on preFlush that sets the updated at. Both are a lot of extra work and you have to write extra code to determine changes. Listening to preFlush will always trigger your updated at and you don't want to make a huge if statement nor create a listener for each Entity.
 
 Requirements
 ------------
@@ -36,14 +53,16 @@ Documentation
 How does it work?
 -----------------
 
-It works by putting an annotation on your entity and registering your listener on our event, assuming you have already registered our event to doctrine. That's all you need to do to start tracking the entity so it will be available in the entityChanged event.
+It works by putting an annotation on your Entity and registering your listener on our event, assuming you have already registered our event to doctrine. That's all you need to do to start tracking the Entity so it will be available in the entityChanged event.
 
 Setup
 -----
 
-#### Registering the events
+#### Registering The Events
 
 Here's an example of a very basic setup. Setting this up will be a lot easier if you use a framework that has a Dependency Injection Container.
+
+> Note: If you use Symfony2, you can take a look at the [hostnet/entity-tracker-bundle](https://github.com/hostnet/entity-tracker-bundle). This bundle is designed to configure the services for you.
 
 ```php
 
@@ -77,8 +96,10 @@ $event_manager->addEventListener('entityChanged', $event);
 
 ```
 
-#### ChangedAtListener.php
-The listener needs to have 1 method that has the same name as the event name, it's how the doctrine event manager works. This method will have 1 argument which is the `EntityChangedEvent $event`. The event contains the used EntityManager, Current Entity, Original (old) Entity and an array of the fields which have been altered -or mutated.
+#### Creating the Listener
+The listener needs to have 1 method that has the same name as the event name. This method will have 1 argument which is the `EntityChangedEvent $event`. The event contains the used EntityManager, Current Entity, Original (old) Entity and an array of the fields which have been altered -or mutated.
+
+> Note: The Doctrine2 Event Manager uses the event name as method name, therefore you should implement the entityChanged method as listed below.
 
 ```php
 
@@ -109,8 +130,8 @@ class ChangedAtListener
 
 ```
 
-#### _UpdatableInterface.php_
-This interface is just to validate we have the setUpdatedAt method available in our listener.
+#### Creating an Interface for the Entity
+Additionally to the `@Tracked` annotation, we want to determine if we can set and updated_at field within our Entity. This can be done by creating the following interface for our Entity.
 
 ```php
 
@@ -124,8 +145,8 @@ interface UpdatableInterface
 
 ```
 
-#### Registering the Annotation
-All we have to do now is put the @Tracked annotation and Interface on our Entity.
+#### Registering the Annotation on the Entity
+All we have to do now is put the `@Tracked` annotation and Interface on our Entity and implement the required method
 
 ```php
 
@@ -144,20 +165,116 @@ class MyEntity implements UpdatableInterface
      */
     private $changed_at;
 
-    public function setUpdatedAt(\DateTime $dt)
+    public function setUpdatedAt(\DateTime $now)
     {
-        $this->changed_at = $dt;
+        $this->changed_at = $now;
     }
 }
 
 ```
 
-### What's next?
+#### What's Next?
+Change the value of a field and flush the Entity. This will trigger the preFlush, which in turn will trigger our listener, which then fires up the entityChanged event.
 
 ```php
 
 $entity->setName('henk');
 $em->flush();
-// Voila, your updatedAt is set filled in
+// Voila, your changed_at is filled in
 
+```
+
+### Extending the Tracker Annotation
+You might want to extend the `@Tracker` annotation. This allows you to add options and additional checks within your listener.
+
+#### Example Annotation
+In the following example, you will see how using a creating a custom annotation works.
+ - You have to add `@Annotation`
+ - You have to add `@Target({"CLASS"})`
+ - It has to extend `Hostnet\Component\EntityTracker\Annotation\Tracked`
+
+Using this annotation will give us specific access to options within our listener. We can now attempt to get this annotation in the listener and we get can call `getIgnoredFields()`. This example will ignore certain fields for entities using the annotation.
+
+```php
+
+use Hostnet\Component\EntityTracker\Annotation\Tracked;
+
+/**
+ * @Annotation
+ * @Target({"CLASS"})
+ */
+class Changed extends Tracked
+{
+    public $ignore_fields = [];
+
+    public function getIgnoredFields()
+    {
+        if (empty($this->ignore_fields)) {
+            return ['id'];
+        }
+
+        return $ignore_fields;
+    }
+}
+
+```
+
+#### Custom Annotation Resolvers
+To obtain the Annotation, we have implemented resolvers. The example below shows how you could implement it yourself.
+
+```php
+
+use Doctrine\ORM\EntityManagerInterface;
+use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+
+class ChangedResolver
+{
+    private $annotation = 'Changed';
+
+    private $provider;
+
+    public function __construct(EntityAnnotationMetadataProvider $provider)
+    {
+        $this->provider = $provider;
+    }
+
+    public function getChangedAnnotation(EntityManagerInterface $em, $entity)
+    {
+        return $this->provider->getAnnotationFromEntity($em, $entity, $this->annotation);
+    }
+}
+
+```
+
+
+#### Custom entityChanged Listener
+The listener can now use the resolver to obtain the annotation so possible do something extra when a specific set of fields is changed.
+
+```php
+
+use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
+
+class ChangedListener
+{
+    private $resolver;
+
+    public function __construct(ChangedResolver $resolver)
+    {
+        $this->resolver = $resolver;
+    }
+
+    public function entityChanged(EntityChangedEvent $event)
+    {
+        $em     = $event->getEntityManager();
+        $entity = $event->getCurrentEntity();
+
+        if (null === ($annotation = $this->resolver->getChangedAnnotation($em, $entity))) {
+            return;
+        }
+
+        $preferred_changes = array_diff($annotation->getIgnoredFields(), $event->getMutatedFields());
+
+        // do something with them
+    }
+}
 ```
