@@ -25,11 +25,11 @@ The Entity Tracker Component is a library used to track changes within an Entity
 
 Entities become tracked when you implement the `@Tracked` annotation or a sub-class of `@Tracked`. You have total control over what happens next and which events you will use to listen to the `entityChanged` event.
 
-Let's say that every time you flush your User, you want to set when it was updated. By default standards, you would have to call `$user->setUpdatedAt()` manually or create a custom listener on preFlush that sets the updated at. Both are a lot of extra work and you have to write extra code to determine changes. Listening to preFlush will always trigger your updated at and you don't want to make a huge if statement nor create a listener for each Entity.
+Let's say that every time you flush your User, you want to set when it was updated. By default, you would have to call `$user->setUpdatedAt()` manually or create a custom listener on preFlush that sets the updated at timestamp. Both are a lot of extra work and you have to write extra code to determine changes. Listening to preFlush will always trigger your listener and you don't want to make a huge if statement nor create a listener for each Entity.
 
 Requirements
 ------------
-The tracker component requires a minimal php version of 5.4 and runs on Doctrine2. For specific requirements, please check [composer.json](../master/composer.json)
+The tracker component requires at least php 5.4 and runs on Doctrine2. For specific requirements, please check [composer.json](../master/composer.json)
 
 Installation
 ------------
