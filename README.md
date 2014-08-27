@@ -13,7 +13,6 @@ README
      - [Creating an Interface for the Entity](#creating-an-interface-for-the-entity)
      - [Registering the Annotation on the Entity](#registering-the-annotation-on-the-entity)
      - [What's Next?](#whats-next)
-     - [Extending the Tracker Annotation](#extending-the-tracker-annotation)
    - [Extending the Tracker Annotation](#extending-the-tracker-annotation)
      - [Example Annotation](#example-annotation)
      - [Custom Annotation Resolvers](#custom-annotation-resolvers)
