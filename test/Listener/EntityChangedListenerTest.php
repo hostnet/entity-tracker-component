@@ -2,7 +2,6 @@
 namespace Hostnet\Component\EntityTracker\Listener;
 
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
@@ -47,7 +46,10 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->event_manager = new EventManager();
+        $this->event_manager = $this
+            ->getMockBuilder('Doctrine\Common\EventManager')
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->em
             ->expects($this->any())
@@ -77,6 +79,10 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->never())
             ->method('isEntityManaged');
 
+        $this->event_manager
+            ->expects($this->never())
+            ->method('dispatchEvent');
+
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
 
@@ -95,6 +101,10 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->meta_mutation_provider
             ->expects($this->never())
             ->method('isEntityManaged');
+
+        $this->event_manager
+            ->expects($this->never())
+            ->method('dispatchEvent');
 
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
@@ -120,6 +130,10 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->meta_mutation_provider
             ->expects($this->never())
             ->method('createOriginalEntity');
+
+        $this->event_manager
+            ->expects($this->never())
+            ->method('dispatchEvent');
 
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
@@ -153,6 +167,10 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getMutatedFields')
             ->willReturn([]);
+
+        $this->event_manager
+            ->expects($this->never())
+            ->method('dispatchEvent');
 
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
@@ -188,6 +206,37 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getMutatedFields')
             ->willReturn(['id']);
+
+        $this->event_manager
+            ->expects($this->once())
+            ->method('dispatchEvent')
+            ->with('entityChanged', $this->isInstanceof('Hostnet\Component\EntityTracker\Event\EntityChangedEvent'));
+
+        $this->listener->preFlush(new PreFlushEventArgs($this->em));
+    }
+
+    public function testPreFlushWithProxy()
+    {
+        $entity = $this->getMock('Doctrine\ORM\Proxy\Proxy');
+
+        $this->meta_mutation_provider
+            ->expects($this->once())
+            ->method('getFullChangeSet')
+            ->willReturn($this->genericEntityDataProvider($entity));
+
+        $this->meta_annotation_provider
+            ->expects($this->once())
+            ->method('isTracked')
+            ->willReturn(true);
+
+        $this->meta_mutation_provider
+            ->expects($this->once())
+            ->method('isEntityManaged')
+            ->willReturn(true);
+
+        $this->event_manager
+            ->expects($this->never())
+            ->method('dispatchEvent');
 
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
