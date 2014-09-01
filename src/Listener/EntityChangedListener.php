@@ -2,6 +2,7 @@
 namespace Hostnet\Component\EntityTracker\Listener;
 
 use Doctrine\ORM\Event\PreFlushEventArgs;
+use Doctrine\ORM\Proxy\Proxy;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Events;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
@@ -71,7 +72,7 @@ class EntityChangedListener
             }
 
             foreach ($updates as $entity) {
-                if (!$this->meta_mutation_provider->isEntityManaged($em, $entity)) {
+                if (!$this->meta_mutation_provider->isEntityManaged($em, $entity) || $entity instanceof Proxy) {
                     continue;
                 }
 
