@@ -39,7 +39,7 @@ Installing is pretty easy, this package is available on [packagist](https://pack
 
 ```javascript
     "require" : {
-        "hostnet/entity-tracker-component" : "0.*"
+        "hostnet/entity-tracker-component" : "1.*"
     }
 
 ```
