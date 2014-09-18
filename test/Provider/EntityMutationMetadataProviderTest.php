@@ -136,6 +136,30 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertCount($expected_changes, $provider->getMutatedFields($this->em, $entity, $original));
     }
 
+    /**
+     * @return array[]
+     */
+    public function getMutatedFieldsProvider()
+    {
+        // testing with objects as doctrine allows an @ORM\Id on Foreign Keys
+        $std1 = new \stdClass();
+        $std1->id = 1;
+        $std2 = new \stdClass();
+        $std2->id = 2;
+        $std3 = new \stdClass();
+        $std3->id = 2;
+
+        return [
+            [1, 1, 0],
+            [1, 2, 1],
+            [$std1, $std1, 0],
+            [$std2, $std2, 0],
+            [$std2, $std3, 1],
+            [$std1, $std2, 1],
+            [$std2, $std1, 1]
+        ];
+    }
+
     public function testGetMutatedFieldsEmpty()
     {
         $entity   = new MockEntity();
@@ -150,17 +174,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 
         $provider = new EntityMutationMetadataProvider($this->reader);
         $this->assertEquals(["parent"], $provider->getMutatedFields($this->em, $entity, $original));
-    }
-
-    /**
-     * @return array[]
-     */
-    public function getMutatedFieldsProvider()
-    {
-        return [
-            [1, 1, 0],
-            [1, 2, 1]
-        ];
     }
 
     /**

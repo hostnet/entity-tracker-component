@@ -105,11 +105,19 @@ class EntityMutationMetadataProvider
     {
         // check if the PK of the related entity has changed (thus different link)
         if (null !== $left && null !== $right) {
-            $diff = array_diff(
+            $diff = array_udiff(
                 $association_meta->getIdentifierValues($left),
-                $association_meta->getIdentifierValues($right)
-            );
+                $association_meta->getIdentifierValues($right),
+                function ($a, $b) {
+                    // note that equal returns 0, difference should return -1 or 1
+                    if (!is_object($a) && !is_object($b)) {
+                        return (string) $a === (string) $b ? 0 : 1;
+                    }
 
+                    // prevent casting objects to strings
+                    return $a === $b ? 0 : 1;
+                }
+            );
             if (!empty($diff)) {
                 return true;
             }
