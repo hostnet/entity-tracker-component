@@ -142,11 +142,11 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     public function getMutatedFieldsProvider()
     {
         // testing with objects as doctrine allows an @ORM\Id on Foreign Keys
-        $std1 = new \stdClass();
+        $std1     = new \stdClass();
         $std1->id = 1;
-        $std2 = new \stdClass();
+        $std2     = new \stdClass();
         $std2->id = 2;
-        $std3 = new \stdClass();
+        $std3     = new \stdClass();
         $std3->id = 2;
 
         return [
