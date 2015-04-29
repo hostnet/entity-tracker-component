@@ -2,7 +2,6 @@
 namespace Hostnet\Component\EntityTracker\Listener;
 
 use Doctrine\ORM\Event\PreFlushEventArgs;
-use Psr\Log\LoggerInterface;
 
 /**
  * Listener for the Entities that use the Mutation Annotation.
@@ -32,7 +31,7 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->logger = $this->getMock(LoggerInterface::class);
+        $this->logger = $this->getMock('Psr\Log\LoggerInterface');
 
         $this->em = $this
             ->getMockBuilder('Doctrine\ORM\EntityManager')
