@@ -1,13 +1,7 @@
 <?php
 namespace Hostnet\Component\EntityTracker\Listener;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
-use Doctrine\ORM\Configuration;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Event\PreFlushEventArgs;
-use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\UnitOfWork;
 
 /**
  * Listener for the Entities that use the Mutation Annotation.
@@ -20,6 +14,7 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
 {
     private $meta_annotation_provider;
     private $meta_mutation_provider;
+    private $logger;
     private $listener;
     private $event_manager;
     private $em;
@@ -35,6 +30,8 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $this->logger = $this->getMock('Psr\Log\LoggerInterface');
 
         $this->em = $this
             ->getMockBuilder('Doctrine\ORM\EntityManager')
@@ -58,7 +55,8 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
 
         $this->listener = new EntityChangedListener(
             $this->meta_annotation_provider,
-            $this->meta_mutation_provider
+            $this->meta_mutation_provider,
+            $this->logger
         );
     }
 
@@ -74,6 +72,8 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('isTracked')
             ->willReturn(false);
+
+        $this->logger->expects($this->never())->method('info');
 
         $this->meta_mutation_provider
             ->expects($this->never())
@@ -98,6 +98,8 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->method('isTracked')
             ->willReturn(false);
 
+        $this->logger->expects($this->never())->method('info');
+
         $this->meta_mutation_provider
             ->expects($this->never())
             ->method('isEntityManaged');
@@ -121,6 +123,8 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('isTracked')
             ->willReturn(true);
+
+        $this->logger->expects($this->never())->method('info');
 
         $this->meta_mutation_provider
             ->expects($this->once())
@@ -152,6 +156,8 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('isTracked')
             ->willReturn(true);
+
+        $this->logger->expects($this->never())->method('info');
 
         $this->meta_mutation_provider
             ->expects($this->once())
@@ -192,6 +198,8 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->method('isTracked')
             ->willReturn(true);
 
+        $this->logger->expects($this->once())->method('info');
+
         $this->meta_mutation_provider
             ->expects($this->once())
             ->method('isEntityManaged')
@@ -228,6 +236,8 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('isTracked')
             ->willReturn(true);
+
+        $this->logger->expects($this->never())->method('info');
 
         $this->meta_mutation_provider
             ->expects($this->once())
