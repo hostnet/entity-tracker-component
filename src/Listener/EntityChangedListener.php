@@ -52,7 +52,7 @@ class EntityChangedListener
     ) {
         $this->meta_annotation_provider = $meta_annotation_provider;
         $this->meta_mutation_provider   = $meta_mutation_provider;
-        $this->logger = $logger ? : new NullLogger();
+        $this->logger                   = $logger ? : new NullLogger();
     }
 
     /**

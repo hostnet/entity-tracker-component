@@ -4,6 +4,7 @@ namespace Hostnet\Component\EntityTracker\Provider;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\UnitOfWork;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -72,9 +73,10 @@ class EntityMutationMetadataProvider
     public function getMutatedFields(EntityManagerInterface $em, $entity, $original)
     {
         $mutation_data = [];
-        $metadata      = $em->getClassMetadata(get_class($entity));
-        $fields        = $metadata->getFieldNames();
-        $associations  = $metadata->getAssociationNames();
+        /* @var $metadata \Doctrine\ORM\Mapping\ClassMetadata */
+        $metadata     = $em->getClassMetadata(get_class($entity));
+        $fields       = $metadata->getFieldNames();
+        $associations = $metadata->getAssociationNames();
 
         if ($entity !== null && $original === null) {
             return array_merge($fields, $associations);
@@ -91,12 +93,21 @@ class EntityMutationMetadataProvider
         }
 
         for ($i = 0, $n = count($associations); $i < $n; $i++) {
-            $association             = $associations[$i];
-            $association_meta        = $em->getClassMetadata($metadata->getAssociationTargetClass($association));
+            $association      = $associations[$i];
+            $association_meta = $metadata->getAssociationMapping($association);
+            if ($association_meta['type'] === ClassMetadataInfo::ONE_TO_ONE && !$association_meta['isOwningSide']) {
+                continue;
+            }
+
+            $association_target_meta = $em->getClassMetadata($metadata->getAssociationTargetClass($association));
             $association_value_left  = $metadata->getFieldValue($entity, $association);
             $association_value_right = $metadata->getFieldValue($original, $association);
 
-            if ($this->hasAssociationChanged($association_meta, $association_value_left, $association_value_right)) {
+            if ($this->hasAssociationChanged(
+                $association_target_meta,
+                $association_value_left,
+                $association_value_right
+            )) {
                 $mutation_data[] = $association;
             }
         }
@@ -114,16 +125,9 @@ class EntityMutationMetadataProvider
     {
         // check if the PK of the related entity has changed (thus different link)
         if (null !== $left && null !== $right) {
-            $left_values = $association_meta->getIdentifierValues($left);
+            $left_values  = $association_meta->getIdentifierValues($left);
             $right_values = $association_meta->getIdentifierValues($right);
 
-            $this->logger->info(
-                "hasAssociationChanged",
-                [
-                    'left' => $left_values,
-                    'right' => $right_values
-                ]
-            );
             $diff = array_udiff(
                 $left_values,
                 $right_values,
@@ -138,6 +142,13 @@ class EntityMutationMetadataProvider
                 }
             );
             if (!empty($diff)) {
+                $this->logger->info(
+                    "Association Change detected",
+                    [
+                        'left' => $left_values,
+                        'right' => $right_values
+                    ]
+                );
                 return true;
             }
         }
