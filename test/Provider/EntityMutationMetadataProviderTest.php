@@ -2,6 +2,7 @@
 namespace Hostnet\Component\EntityTracker\Provider;
 
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\UnitOfWork;
 use Hostnet\Component\EntityTracker\Mocked\MockEntity;
 
@@ -119,13 +120,14 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 
         $metadata
             ->expects($this->once())
+            ->method('getAssociationMapping');
+        $metadata
+            ->expects($this->once())
             ->method('getAssociationTargetClass');
-
         $metadata
             ->expects($this->exactly(2))
             ->method('getFieldValue')
             ->willReturnOnConsecutiveCalls($entity->parent, $original->parent);
-
         $metadata
             ->expects($this->exactly(2))
             ->method('getIdentifierValues')
@@ -134,6 +136,37 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 
         $provider = new EntityMutationMetadataProvider($this->reader);
         $this->assertCount($expected_changes, $provider->getMutatedFields($this->em, $entity, $original));
+    }
+
+    public function testGetMutatedFieldsOneToOneNotOwning()
+    {
+        $entity             = new MockEntity();
+        $entity->parent     = new \stdClass();
+        $entity->parent->id = 42;
+        $original           = new MockEntity();
+        $original->parent   = null;
+        $metadata           = $this->buildMetadata($entity, [], ['parent']);
+
+        $this->em
+            ->expects($this->exactly(2))
+            ->method('getClassMetadata')
+            ->willReturn($metadata);
+
+        $metadata
+            ->expects($this->once())
+            ->method('getAssociationMapping')
+            ->with('parent')
+            ->willReturn(['type' => ClassMetadataInfo::ONE_TO_ONE, 'isOwningSide' => false]);
+        $metadata
+            ->expects($this->once())
+            ->method('getAssociationTargetClass');
+        $metadata
+            ->expects($this->exactly(2))
+            ->method('getFieldValue')
+            ->willReturnOnConsecutiveCalls($entity->parent, $original->parent);
+
+        $provider = new EntityMutationMetadataProvider($this->reader);
+        $this->assertCount(0, $provider->getMutatedFields($this->em, $entity, $original));
     }
 
     /**
@@ -247,6 +280,7 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
                 'getAssociationNames',
                 'setFieldValue',
                 'getFieldValue',
+                'getAssociationMapping',
                 'getAssociationTargetClass',
                 'getIdentifierValues',
                 'getReflectionClass'
