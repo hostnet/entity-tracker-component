@@ -91,7 +91,10 @@ class EntityChangedListener
                 if (!empty($mutated_fields)) {
                     $this->logger->info(
                         'Going to notify a change to {entity_class}, which has {mutated_fields}',
-                        ['entity_class' => get_class($entity), 'mutated_fields' => $mutated_fields]
+                        [
+                            'entity_class' => get_class($entity),
+                            'mutated_fields' => $mutated_fields
+                        ]
                     );
                     $em->getEventManager()->dispatchEvent(
                         Events::entityChanged,
