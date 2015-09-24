@@ -251,6 +251,52 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em));
     }
 
+    public function testPreFlushWithInitializedProxy()
+    {
+        $original     = new \stdClass();
+        $original->id = 0;
+
+        $entity = $this->getMock('Doctrine\ORM\Proxy\Proxy');
+        $entity
+            ->expects($this->once())
+            ->method('__isInitialized')
+            ->willReturn(true);
+
+        $this->meta_mutation_provider
+            ->expects($this->once())
+            ->method('getFullChangeSet')
+            ->willReturn($this->genericEntityDataProvider($entity));
+
+        $this->meta_annotation_provider
+            ->expects($this->once())
+            ->method('isTracked')
+            ->willReturn(true);
+
+        $this->logger->expects($this->once())->method('info');
+
+        $this->meta_mutation_provider
+            ->expects($this->once())
+            ->method('isEntityManaged')
+            ->willReturn(true);
+
+        $this->meta_mutation_provider
+            ->expects($this->once())
+            ->method('createOriginalEntity')
+            ->willReturn($original);
+
+        $this->meta_mutation_provider
+            ->expects($this->once())
+            ->method('getMutatedFields')
+            ->willReturn(['id']);
+
+        $this->event_manager
+            ->expects($this->once())
+            ->method('dispatchEvent')
+            ->with('entityChanged', $this->isInstanceof('Hostnet\Component\EntityTracker\Event\EntityChangedEvent'));
+
+        $this->listener->preFlush(new PreFlushEventArgs($this->em));
+    }
+
     /**
      * @param  mixed $entity
      * @return array[]

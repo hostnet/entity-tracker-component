@@ -81,7 +81,9 @@ class EntityChangedListener
             }
 
             foreach ($updates as $entity) {
-                if (!$this->meta_mutation_provider->isEntityManaged($em, $entity) || $entity instanceof Proxy) {
+                if (!$this->meta_mutation_provider->isEntityManaged($em, $entity)
+                    || ($entity instanceof Proxy && !$entity->__isInitialized())
+                ) {
                     continue;
                 }
 
