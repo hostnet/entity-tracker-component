@@ -148,7 +148,7 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         $metadata           = $this->buildMetadata($entity, [], ['parent']);
 
         $this->em
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('getClassMetadata')
             ->willReturn($metadata);
 
@@ -157,13 +157,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
             ->method('getAssociationMapping')
             ->with('parent')
             ->willReturn(['type' => ClassMetadataInfo::ONE_TO_ONE, 'isOwningSide' => false]);
-        $metadata
-            ->expects($this->once())
-            ->method('getAssociationTargetClass');
-        $metadata
-            ->expects($this->exactly(2))
-            ->method('getFieldValue')
-            ->willReturnOnConsecutiveCalls($entity->parent, $original->parent);
 
         $provider = new EntityMutationMetadataProvider($this->reader);
         $this->assertCount(0, $provider->getMutatedFields($this->em, $entity, $original));
