@@ -6,10 +6,17 @@ namespace Hostnet\Component\EntityTracker;
  */
 final class Events
 {
+    //@codingStandardsIgnoreStart
+    /**
+     * @deprecated use Events::ENTITY_CHANGED instead.
+     */
+    const entityChanged = self::ENTITY_CHANGED;
+    //@codingStandardsIgnoreEnd
+
     /**
      * Thrown when @Tracked (or derived) annotations are found on the entity
      *
      * @var string
      */
-    const entityChanged = 'entityChanged';
+    const ENTITY_CHANGED = 'entityChanged';
 }

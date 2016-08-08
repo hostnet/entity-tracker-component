@@ -19,7 +19,7 @@ class EntityAnnotationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     {
         $this->reader   = new AnnotationReader();
         $this->provider = new EntityAnnotationMetadataProvider($this->reader);
-        $this->em       = $this->getMock('Doctrine\ORM\EntityManagerInterface');
+        $this->em       = $this->createMock('Doctrine\ORM\EntityManagerInterface');
     }
 
     /**

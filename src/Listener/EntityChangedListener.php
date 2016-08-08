@@ -13,7 +13,7 @@ use Psr\Log\NullLogger;
 /**
  * Listener for entities that use the Tracked Annotation.
  *
- * This listener will fire an "Events::entityChanged" event
+ * This listener will fire an "Events::ENTITY_CHANGED" event
  * per entity that is changed.
  * @author Yannick de Lange <ydelange@hostnet.nl>
  * @author Iltar van der Berg <ivanderberg@hostnet.nl>
@@ -60,7 +60,7 @@ class EntityChangedListener
      *
      * Checks if the entity contains an @Tracked (or derived)
      * annotation. If so, it will attempt to calculate changes
-     * made and dispatch 'Events::entityChanged' with the current
+     * made and dispatch 'Events::ENTITY_CHANGED' with the current
      * and original entity states. Note that the original entity
      * is not managed.
      *
@@ -99,7 +99,7 @@ class EntityChangedListener
                         ]
                     );
                     $em->getEventManager()->dispatchEvent(
-                        Events::entityChanged,
+                        Events::ENTITY_CHANGED,
                         new EntityChangedEvent($em, $entity, $original, $mutated_fields)
                     );
                 }

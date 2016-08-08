@@ -31,7 +31,7 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->logger = $this->getMock('Psr\Log\LoggerInterface');
+        $this->logger = $this->createMock('Psr\Log\LoggerInterface');
 
         $this->em = $this
             ->getMockBuilder('Doctrine\ORM\EntityManager')
@@ -225,7 +225,7 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
 
     public function testPreFlushWithProxy()
     {
-        $entity = $this->getMock('Doctrine\ORM\Proxy\Proxy');
+        $entity = $this->createMock('Doctrine\ORM\Proxy\Proxy');
 
         $this->meta_mutation_provider
             ->expects($this->once())
@@ -256,7 +256,7 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $original     = new \stdClass();
         $original->id = 0;
 
-        $entity = $this->getMock('Doctrine\ORM\Proxy\Proxy');
+        $entity = $this->createMock('Doctrine\ORM\Proxy\Proxy');
         $entity
             ->expects($this->once())
             ->method('__isInitialized')

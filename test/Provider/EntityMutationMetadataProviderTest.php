@@ -19,7 +19,7 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->reader = new AnnotationReader();
-        $this->em     = $this->getMock('Doctrine\ORM\EntityManagerInterface');
+        $this->em     = $this->createMock('Doctrine\ORM\EntityManagerInterface');
         $this->uow    = $this
             ->getMockBuilder('Doctrine\ORM\UnitOfWork')
             ->disableOriginalConstructor()
