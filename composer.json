@@ -1,36 +1,38 @@
 {
-    "name": "hostnet/entity-tracker-component",
-    "description": "Provides an event when a Tracked entity changes",
-    "license": "MIT",
+    "name":              "hostnet/entity-tracker-component",
+    "description":       "Provides an event when a Tracked entity changes",
+    "license":           "MIT",
     "require": {
-        "php"                  : "5.*,>=5.6||7.*",
-        "doctrine/common"      : "2.*,>=2.4.0",
-        "doctrine/annotations" : "1.*,>=1.2.0",
-        "doctrine/orm"         : "2.*,>=2.4.0",
-        "psr/log"              : "^1.0.0"
+        "php":                  "5.*,>=5.6||7.*",
+        "doctrine/annotations": "1.*,>=1.2.0",
+        "doctrine/common":      "2.*,>=2.4.0",
+        "doctrine/orm":         "2.*,>=2.4.0",
+        "psr/log":              "^1.0.0"
     },
     "require-dev": {
-        "hostnet/phpcs-tool": "^4.0.8",
-        "phpunit/phpunit"   : "^5.5.0"
+        "hostnet/database-test-lib": "^1.0",
+        "hostnet/phpcs-tool":        "^4.0.8",
+        "phpunit/phpunit":           "^5.5.0",
+        "symfony/var-dumper": "^3.1"
     },
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
-           "Hostnet\\Component\\EntityTracker\\" : "src/"
+            "Hostnet\\Component\\EntityTracker\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-           "Hostnet\\Component\\EntityTracker\\" : "test/"
+            "Hostnet\\Component\\EntityTracker\\": "test/"
         }
     },
     "authors": [
         {
-            "name": "Iltar van der Berg",
+            "name":  "Iltar van der Berg",
             "email": "ivanderberg@hostnet.nl"
         },
         {
-            "name": "Yannick de Lange",
+            "name":  "Yannick de Lange",
             "email": "ydelange@hostnet.nl"
         }
     ]

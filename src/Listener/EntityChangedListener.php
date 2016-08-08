@@ -1,6 +1,7 @@
 <?php
 namespace Hostnet\Component\EntityTracker\Listener;
 
+use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Proxy\Proxy;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
@@ -87,12 +88,17 @@ class EntityChangedListener
                     continue;
                 }
 
-                $original       = $this->meta_mutation_provider->createOriginalEntity($em, $entity);
+                $original = $this->meta_mutation_provider->createOriginalEntity($em, $entity);
+
+                // New entities are handled in the pre-persist event.
+                if (!$original) {
+                    continue;
+                }
                 $mutated_fields = $this->meta_mutation_provider->getMutatedFields($em, $entity, $original);
 
                 if (!empty($mutated_fields)) {
                     $this->logger->info(
-                        'Going to notify a change to {entity_class}, which has {mutated_fields}',
+                        'Going to notify a change (preFlush) to {entity_class}, which has {mutated_fields}',
                         [
                             'entity_class' => get_class($entity),
                             'mutated_fields' => $mutated_fields
@@ -105,5 +111,39 @@ class EntityChangedListener
                 }
             }
         }
+    }
+
+    /**
+     * Pre Persist event callback
+     *
+     * Checks if the entity contains an @Tracked (or derived)
+     * annotation. If so, it will dispatch 'Events::ENTITY_CHANGED'
+     * with the new entity states.
+     *
+     * @param LifecycleEventArgs $event
+     */
+    public function prePersist(LifecycleEventArgs $event)
+    {
+        $em     = $event->getEntityManager();
+        $entity = $event->getEntity();
+
+        if (false === $this->meta_annotation_provider->isTracked($em, $entity)) {
+            return;
+        }
+
+        $mutated_fields = $this->meta_mutation_provider->getMutatedFields($em, $entity, null);
+
+        $this->logger->info(
+            'Going to notify a change (prePersist) to {entity_class}, which has {mutated_fields}',
+            [
+                'entity_class' => get_class($entity),
+                'mutated_fields' => $mutated_fields
+            ]
+        );
+
+        $em->getEventManager()->dispatchEvent(
+            Events::ENTITY_CHANGED,
+            new EntityChangedEvent($em, $entity, null, $mutated_fields)
+        );
     }
 }
