@@ -10,7 +10,7 @@ class EntityChangedEventTest extends \PHPUnit_Framework_TestCase
 {
     public function testAll()
     {
-        $em              = $this->getMock('Doctrine\ORM\EntityManagerInterface');
+        $em              = $this->createMock('Doctrine\ORM\EntityManagerInterface');
         $current_entity  = new MockEntity();
         $original_entity = new MockEntity();
         $mutated_fields  = ['test'];
