@@ -91,6 +91,7 @@ $event = new UpdatedAtListener(new DateTime());
 
 // register the events
 $event_manager->addEventListener('preFlush', $entity_changed_listener);
+$event_manager->addEventListener('prePersist', $entity_changed_listener);
 $event_manager->addEventListener('entityChanged', $event);
 
 ```
