@@ -73,7 +73,7 @@ class EntityChangedListener
         $changes = $this->meta_mutation_provider->getFullChangeSet($em);
 
         foreach ($changes as $updates) {
-            if (empty($updates)) {
+            if (0 === count($updates)) {
                 continue;
             }
 

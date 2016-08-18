@@ -10,11 +10,11 @@ use Hostnet\Component\DatabaseTest\MysqlPersistentConnection;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Functional\Entity\Author;
 use Hostnet\Component\EntityTracker\Functional\Entity\Book;
+use Hostnet\Component\EntityTracker\Functional\Entity\Tool;
+use Hostnet\Component\EntityTracker\Functional\Entity\Toolbox;
 use Hostnet\Component\EntityTracker\Listener\EntityChangedListener;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
-use Symfony\Component\Console\Logger\ConsoleLogger;
-use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * @coversNothing
@@ -152,5 +152,29 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         self::assertCount(1, $this->events);
         self::assertSame('The Silmarillion', $this->events[0]->getCurrentEntity()->title);
         self::assertSame('Silmarillion', $this->events[0]->getOriginalEntity()->title);
+    }
+
+    public function testMutatedAssociations()
+    {
+        // Create new Toolbox with tools.
+        $toolbox = new Toolbox(new Tool('pliers'), new Tool('hammer'));
+        $this->em->persist($toolbox);
+        $this->em->flush();
+
+        self::assertSame(['id', 'tag'], $this->events[0]->getMutatedFields());
+
+        // Add new Tool to the Toolbox.
+        $this->events     = [];
+        $toolbox->tools[] = new Tool('saw');
+
+        $toolbox->tag = "Work don't play";
+        $this->em->flush();
+        self::assertSame(['tag'], $this->events[0]->getMutatedFields());
+
+        // Remove a Tool from the Toolbox.
+        $this->events = [];
+        unset($toolbox->tools[2]->toolbox, $toolbox->tools[2]);
+
+        $this->em->flush();
     }
 }

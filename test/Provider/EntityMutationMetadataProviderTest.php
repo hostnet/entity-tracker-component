@@ -2,295 +2,110 @@
 namespace Hostnet\Component\EntityTracker\Provider;
 
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
-use Doctrine\ORM\UnitOfWork;
-use Hostnet\Component\EntityTracker\Mocked\MockEntity;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\ORM\Tools\Setup;
+use Hostnet\Component\DatabaseTest\MysqlPersistentConnection;
+use Hostnet\Component\EntityTracker\Provider\Entity\Node;
+use Hostnet\Component\EntityTracker\Provider\Entity\Painting;
 
 /**
- * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- * @covers Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider
+ * @covers \Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider
  */
 class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 {
-    private $reader;
-    private $em;
-    private $uow;
+    /**
+     * @var MysqlPersistentConnection
+     */
+    private $connection;
 
+    /**
+     * @var EntityManagerInterface
+     */
+    private $em;
+
+    /**
+     * @var EntityMutationMetadataProvider
+     */
+    private $provider;
+
+    /**
+     * {@inheritdoc}
+     */
     public function setUp()
     {
-        $this->reader = new AnnotationReader();
-        $this->em     = $this->createMock('Doctrine\ORM\EntityManagerInterface');
-        $this->uow    = $this
-            ->getMockBuilder('Doctrine\ORM\UnitOfWork')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->connection = new MysqlPersistentConnection();
+        $params           = $this->connection->getConnectionParams();
 
-        $this->em
-            ->expects($this->any())
-            ->method('getUnitOfWork')
-            ->willReturn($this->uow);
+        $config   = Setup::createAnnotationMetadataConfiguration([__DIR__ . '/Entity'], true, null, null, false);
+        $this->em = EntityManager::create($params, $config);
+
+        // create tables in the database
+        $metadata    = $this->em->getMetadataFactory()->getAllMetadata();
+        $schema_tool = new SchemaTool($this->em);
+        $schema_tool->createSchema($metadata);
+
+        $this->provider = new EntityMutationMetadataProvider(new AnnotationReader());
     }
+
+    public function testChanges()
+    {
+        $sunflowers = new Painting('Sunflowers');
+        $this->em->persist($sunflowers);
+        $this->em->flush();
+        $sunflowers->name = 'The Sunflowers';
+        self::assertCount(1, $this->provider->getFullChangeSet($this->em));
+    }
+
 
     public function testCreateOriginalEntity()
     {
-        $entity   = new MockEntity();
-        $metadata = $this->buildMetadata($entity, ['id'], ['parent']);
+        $tall_ship = new Painting('Tall Ship');
+        self::assertNull($this->provider->createOriginalEntity($this->em, $tall_ship));
 
-        $metadata
-            ->expects($this->exactly(2))
-            ->method('setFieldValue')
-            ->withConsecutive([$entity, 'id', $this->anything()], [$entity, 'parent', $this->anything()]);
+        $this->em->persist($tall_ship);
+        $this->em->flush();
 
-        $this->uow
-            ->expects($this->once())
-            ->method('getOriginalEntityData')
-            ->willReturn(['id' => 1, 'parent' => 1]);
-
-        $this->em
-            ->expects($this->once())
-            ->method('getClassMetadata')
-            ->willReturn($metadata);
-
-        $provider = new EntityMutationMetadataProvider($this->reader);
-        $provider->createOriginalEntity($this->em, $entity);
-    }
-
-    public function testCreateOriginalEntityEmpty()
-    {
-        $entity   = new MockEntity();
-        $metadata = $this->buildMetadata($entity, ['id'], ['parent']);
-
-        $this->uow
-            ->expects($this->once())
-            ->method('getOriginalEntityData')
-            ->willReturn([]);
-
-        $this->em
-            ->expects($this->once())
-            ->method('getClassMetadata')
-            ->willReturn($metadata);
-
-        $provider = new EntityMutationMetadataProvider($this->reader);
-        $this->assertEquals(null, $provider->createOriginalEntity($this->em, $entity));
+        $tall_ship->name = 'Seven Provinces';
+        $original        = $this->provider->createOriginalEntity($this->em, $tall_ship);
+        self::assertSame('Tall Ship', $original->name);
     }
 
     /**
-     * @dataProvider getMutatedFieldsProvider
+     * @depends testCreateOriginalEntity
      */
-    public function testGetMutatedFieldsId($entity_id, $original_id, $expected_changes)
+    public function testGetMutatedFields()
     {
-        $entity       = new MockEntity();
-        $entity->id   = $entity_id;
-        $original     = new MockEntity();
-        $original->id = $original_id;
-        $metadata     = $this->buildMetadata($entity, ['id'], []);
+        // Simple new entity
+        $venus = new Painting('The birth of Aphrodite');
+        self::assertSame(['id', 'name'], $this->provider->getMutatedFields($this->em, $venus, null));
+        self::assertSame([], $this->provider->getMutatedFields($this->em, $venus, $venus));
 
-        $this->em
-            ->expects($this->once())
-            ->method('getClassMetadata')
-            ->willReturn($metadata);
+        // Complex entity
+        $start       = new Node('start');
+        $start->id   = 1;
+        $end         = new Node('end');
+        $end->id     = 10;
+        $end->parent = $start;
 
-        $metadata
-            ->expects($this->exactly(2))
-            ->method('getFieldValue')
-            ->withConsecutive([$entity, 'id'], [$original, 'id'])
-            ->willReturnOnConsecutiveCalls($entity->id, $original->id);
+        self::assertSame(['id', 'name', 'parent', 'mirror'], $this->provider->getMutatedFields($this->em, $end, null));
+        self::assertSame([], $this->provider->getMutatedFields($this->em, $end, $end));
 
-        $provider = new EntityMutationMetadataProvider($this->reader);
-        $this->assertCount($expected_changes, $provider->getMutatedFields($this->em, $entity, $original));
-    }
-
-    /**
-     * @dataProvider getMutatedFieldsProvider
-     */
-    public function testGetMutatedFieldsParent($entity_id, $original_id, $expected_changes)
-    {
-        $entity               = new MockEntity();
-        $entity->parent       = new \stdClass();
-        $entity->parent->id   = $entity_id;
-        $original             = new MockEntity();
-        $original->parent     = new \stdClass();
-        $original->parent->id = $original_id;
-        $metadata             = $this->buildMetadata($entity, [], ['parent']);
-
-        $this->em
-            ->expects($this->exactly(2))
-            ->method('getClassMetadata')
-            ->willReturn($metadata);
-
-        $metadata
-            ->expects($this->once())
-            ->method('getAssociationMapping');
-        $metadata
-            ->expects($this->once())
-            ->method('getAssociationTargetClass');
-        $metadata
-            ->expects($this->exactly(2))
-            ->method('getFieldValue')
-            ->willReturnOnConsecutiveCalls($entity->parent, $original->parent);
-        $metadata
-            ->expects($this->exactly(2))
-            ->method('getIdentifierValues')
-            ->willReturnOnConsecutiveCalls([$entity->parent->id], [$original->parent->id]);
-
-
-        $provider = new EntityMutationMetadataProvider($this->reader);
-        $this->assertCount($expected_changes, $provider->getMutatedFields($this->em, $entity, $original));
-    }
-
-    public function testGetMutatedFieldsOneToOneNotOwning()
-    {
-        $entity             = new MockEntity();
-        $entity->parent     = new \stdClass();
-        $entity->parent->id = 42;
-        $original           = new MockEntity();
-        $original->parent   = null;
-        $metadata           = $this->buildMetadata($entity, [], ['parent']);
-
-        $this->em
-            ->expects($this->once())
-            ->method('getClassMetadata')
-            ->willReturn($metadata);
-
-        $metadata
-            ->expects($this->once())
-            ->method('getAssociationMapping')
-            ->with('parent')
-            ->willReturn(['type' => ClassMetadataInfo::ONE_TO_ONE, 'isOwningSide' => false]);
-
-        $provider = new EntityMutationMetadataProvider($this->reader);
-        $this->assertCount(0, $provider->getMutatedFields($this->em, $entity, $original));
-    }
-
-    /**
-     * @return array[]
-     */
-    public function getMutatedFieldsProvider()
-    {
-        // testing with objects as doctrine allows an @ORM\Id on Foreign Keys
-        $std1     = new \stdClass();
-        $std1->id = 1;
-        $std2     = new \stdClass();
-        $std2->id = 2;
-        $std3     = new \stdClass();
-        $std3->id = 2;
-
-        return [
-            [1, 1, 0],
-            [1, 2, 1],
-            [$std1, $std1, 0],
-            [$std2, $std2, 0],
-            [$std2, $std3, 1],
-            [$std1, $std2, 1],
-            [$std2, $std1, 1]
-        ];
-    }
-
-    public function testGetMutatedFieldsEmpty()
-    {
-        $entity   = new MockEntity();
-        $original = null;
-        $metadata = $this->buildMetadata($entity, [], ['parent']);
-
-        $this->em
-            ->expects($this->exactly(1))
-            ->method('getClassMetadata')
-            ->willReturn($metadata);
-
-
-        $provider = new EntityMutationMetadataProvider($this->reader);
-        $this->assertEquals(["parent"], $provider->getMutatedFields($this->em, $entity, $original));
-    }
-
-    /**
-     * @dataProvider getFullChangeSetProvider
-     */
-    public function testGetFullChangeSet($changes, $inserts, $expected_size)
-    {
-        $this->uow
-            ->expects($this->once())
-            ->method('getIdentityMap')
-            ->willReturn($changes);
-
-        $this->uow
-            ->expects($this->once())
-            ->method('getScheduledEntityInsertions')
-            ->willReturn($inserts);
-
-        $provider = new EntityMutationMetadataProvider($this->reader);
-        $this->assertCount($expected_size, $provider->getFullChangeSet($this->em));
-    }
-
-    /**
-     * return array[]
-     */
-    public function getFullChangeSetProvider()
-    {
-        $class = 'Hostnet\Component\EntityTracker\Mocked\MockEntity';
-        return [
-            [[], [], 0],
-            [[$class => [new MockEntity()]], [], 1],
-            [[$class => [new MockEntity()]], [new MockEntity()], 1],
-            [[$class => []], [new MockEntity()], 1],
-            [[$class . 'Henk' => [new MockEntity()]], [new MockEntity()], 2],
-        ];
+        $original       = clone $end;
+        $middle         = new Node('middle');
+        $middle->id     = 5;
+        $end->parent    = $middle;
+        $middle->parent = $start;
+        self::assertSame(['parent'], $this->provider->getMutatedFields($this->em, $end, $original));
     }
 
     public function testIsEntityManaged()
     {
-        $entity = new MockEntity();
+        $apples = new Painting('Apples of Cezanne');
+        self::assertFalse($this->provider->isEntityManaged($this->em, $apples));
 
-        $this->uow
-            ->expects($this->any())
-            ->method('getEntityState')
-            ->with($entity)
-            ->willReturnOnConsecutiveCalls(
-                UnitOfWork::STATE_DETACHED,
-                UnitOfWork::STATE_MANAGED,
-                UnitOfWork::STATE_NEW,
-                UnitOfWork::STATE_REMOVED
-            );
-
-        $provider = new EntityMutationMetadataProvider($this->reader);
-        $this->assertFalse($provider->isEntityManaged($this->em, $entity));
-        $this->assertTrue($provider->isEntityManaged($this->em, $entity));
-        $this->assertFalse($provider->isEntityManaged($this->em, $entity));
-        $this->assertFalse($provider->isEntityManaged($this->em, $entity));
-    }
-
-    /**
-     * @param mixed    $entity
-     * @param string[] $field_names
-     * @param string[] $assoc_names
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function buildMetadata($entity, array $field_names, array $assoc_names)
-    {
-        $meta = $this
-            ->getMockBuilder('Doctrine\ORM\Mapping\ClassMetadata')
-            ->setMethods([
-                'getFieldNames',
-                'getAssociationNames',
-                'setFieldValue',
-                'getFieldValue',
-                'getAssociationMapping',
-                'getAssociationTargetClass',
-                'getIdentifierValues',
-                'getReflectionClass'
-            ])
-            ->setConstructorArgs([get_class($entity)])
-            ->getMock();
-
-        $meta
-            ->expects($this->any())
-            ->method('getFieldNames')
-            ->willReturn($field_names);
-
-        $meta
-            ->expects($this->any())
-            ->method('getAssociationNames')
-            ->willReturn($assoc_names);
-
-        return $meta;
+        $this->em->persist($apples);
+        self::assertTrue($this->provider->isEntityManaged($this->em, $apples));
     }
 }

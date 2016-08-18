@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  */
-class Author
+class Tool
 {
     /**
      * @ORM\Id
@@ -14,29 +14,22 @@ class Author
      * @ORM\Column(type="integer")
      * @var int
      */
-    private $id;
+    public $id;
+
+    /**
+     * @ORM\ManyToOne(
+     *     targetEntity="Toolbox",
+     *     inversedBy="tools"
+     * )
+     * @var Toolbox
+     */
+    public $toolbox;
 
     /**
      * @ORM\Column
      * @var string
      */
     public $name;
-
-    /**
-     * @ORM\Embedded(class="Address")
-     * @var Address
-     */
-    public $address;
-
-    /**
-     * @ORM\ManyToMany(
-     *     targetEntity="Book",
-     *     mappedBy="authors",
-     *     cascade="persist"
-     * )
-     * @var Book[]
-     */
-    public $books;
 
     /**
      * @param string $name

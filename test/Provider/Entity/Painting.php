@@ -1,12 +1,12 @@
 <?php
-namespace Hostnet\Component\EntityTracker\Functional\Entity;
+namespace Hostnet\Component\EntityTracker\Provider\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
  */
-class Author
+class Painting
 {
     /**
      * @ORM\Id
@@ -14,29 +14,13 @@ class Author
      * @ORM\Column(type="integer")
      * @var int
      */
-    private $id;
+    public $id;
 
     /**
      * @ORM\Column
      * @var string
      */
     public $name;
-
-    /**
-     * @ORM\Embedded(class="Address")
-     * @var Address
-     */
-    public $address;
-
-    /**
-     * @ORM\ManyToMany(
-     *     targetEntity="Book",
-     *     mappedBy="authors",
-     *     cascade="persist"
-     * )
-     * @var Book[]
-     */
-    public $books;
 
     /**
      * @param string $name
