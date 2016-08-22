@@ -39,7 +39,7 @@ Installing is pretty easy, this package is available on [packagist](https://pack
 
 ```javascript
     "require" : {
-        "hostnet/entity-tracker-component" : "1.*"
+        "hostnet/entity-tracker-component" : "^2.0.1"
     }
 
 ```
@@ -52,7 +52,7 @@ Documentation
 How does it work?
 -----------------
 
-It works by putting an annotation on your Entity and registering your listener on our event, assuming you have already registered our event to doctrine. That's all you need to do to start tracking the Entity so it will be available in the entityChanged event.
+It works by putting an annotation on your Entity and registering your listener on our event, assuming you have already registered our event to doctrine. That's all you need to do to start tracking the Entity so it will be available in the `entityChanged` event.
 
 Setup
 -----
@@ -61,11 +61,11 @@ Setup
 
 Here's an example of a very basic setup. Setting this up will be a lot easier if you use a framework that has a Dependency Injection Container.
 
-> Note: If you use Symfony2, you can take a look at the [hostnet/entity-tracker-bundle](https://github.com/hostnet/entity-tracker-bundle). This bundle is designed to configure the services for you.
+> Note: If you use Symfony, you can take a look at the [hostnet/entity-tracker-bundle](https://github.com/hostnet/entity-tracker-bundle). This bundle is designed to configure the services for you.
 
 ```php
 
-use Acme\Component\Listener\UpdatedAtListener;
+use Acme\Component\Listener\ChangedAtListener;
 use Hostnet\Component\EntityTracker\Listener\EntityChangedListener;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
@@ -87,12 +87,12 @@ $entity_changed_listener = new EntityChangedListener(
 );
 
 // our example listener
-$event = new UpdatedAtListener(new DateTime());
+$listener = new ChangedAtListener(new DateTime());
 
 // register the events
 $event_manager->addEventListener('preFlush', $entity_changed_listener);
 $event_manager->addEventListener('prePersist', $entity_changed_listener);
-$event_manager->addEventListener('entityChanged', $event);
+$event_manager->addEventListener('entityChanged', $listener);
 
 ```
 
