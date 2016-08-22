@@ -2,8 +2,3 @@
 vendor/*
 composer.phar
 composer.lock
-
-# IDE related
-.buildpath
-.project
-.settings
