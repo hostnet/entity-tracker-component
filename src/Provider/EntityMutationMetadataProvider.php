@@ -31,7 +31,7 @@ class EntityMutationMetadataProvider
     public function __construct(Reader $reader, LoggerInterface $logger = null)
     {
         $this->reader = $reader;
-        $this->logger = $logger ? : new NullLogger();
+        $this->logger = $logger ?: new NullLogger();
     }
 
     /**
@@ -68,7 +68,8 @@ class EntityMutationMetadataProvider
      * @param EntityManagerInterface $em
      * @param mixed                  $entity
      * @param mixed                  $original
-     * @return bool
+     * @return string[]
+     * @throws \InvalidArgumentException
      */
     public function getMutatedFields(EntityManagerInterface $em, $entity, $original)
     {
@@ -76,14 +77,25 @@ class EntityMutationMetadataProvider
         /* @var $metadata \Doctrine\ORM\Mapping\ClassMetadata */
         $metadata     = $em->getClassMetadata(get_class($entity));
         $fields       = $metadata->getFieldNames();
-        $associations = $metadata->getAssociationNames();
+        $associations = [];
 
+        foreach ($metadata->getAssociationMappings() as $name => $mapping) {
+            if ($mapping['type'] === ClassMetadataInfo::ONE_TO_ONE && !$mapping['isOwningSide']) {
+                continue;
+            }
+
+            if ($mapping['type'] & ClassMetadataInfo::TO_MANY) {
+                continue;
+            }
+            $associations[] = $name;
+        }
+
+        // New entity, everything changed.
         if ($entity !== null && $original === null) {
             return array_merge($fields, $associations);
         }
 
-        for ($i = 0, $n = count($fields); $i < $n; $i++) {
-            $field = $fields[$i];
+        foreach ($fields as $field) {
             $left  = $metadata->getFieldValue($entity, $field);
             $right = $metadata->getFieldValue($original, $field);
 
@@ -91,14 +103,8 @@ class EntityMutationMetadataProvider
                 $mutation_data[] = $field;
             }
         }
-
-        for ($i = 0, $n = count($associations); $i < $n; $i++) {
-            $association      = $associations[$i];
-            $association_meta = $metadata->getAssociationMapping($association);
-            if ($association_meta['type'] === ClassMetadataInfo::ONE_TO_ONE && !$association_meta['isOwningSide']) {
-                continue;
-            }
-
+        // Owning side of OneToOne associations and ManyToOne associations.
+        foreach ($associations as $association) {
             $association_target_meta = $em->getClassMetadata($metadata->getAssociationTargetClass($association));
             $association_value_left  = $metadata->getFieldValue($entity, $association);
             $association_value_right = $metadata->getFieldValue($original, $association);
@@ -143,42 +149,18 @@ class EntityMutationMetadataProvider
             );
             if (!empty($diff)) {
                 $this->logger->info(
-                    "Association Change detected",
+                    'Association Change detected on owning ONE side',
                     [
-                        'left' => $left_values,
-                        'right' => $right_values
+                        'left'  => $left_values,
+                        'right' => $right_values,
                     ]
                 );
+
                 return true;
             }
         }
 
         return $left != $right;
-    }
-
-    /**
-     * Return the full set of changes, including inserts
-     *
-     * @param EntityManagerInterface $em
-     * @return array
-     */
-    public function getFullChangeSet(EntityManagerInterface $em)
-    {
-        $uow     = $em->getUnitOfWork();
-        $changes = $uow->getIdentityMap();
-        $inserts = $uow->getScheduledEntityInsertions();
-
-        foreach ($inserts as $entity) {
-            $class = get_class($entity);
-            if (!isset($changes[$class])) {
-                $changes[$class] = [];
-            }
-            if (!in_array($entity, $changes[$class], true)) {
-                $changes[$class][] = $entity;
-            }
-        }
-
-        return $changes;
     }
 
     /**
@@ -189,5 +171,14 @@ class EntityMutationMetadataProvider
     public function isEntityManaged(EntityManagerInterface $em, $entity)
     {
         return $em->getUnitOfWork()->getEntityState($entity) === UnitOfWork::STATE_MANAGED;
+    }
+
+    /**
+     * @param EntityManagerInterface $em
+     * @return array
+     */
+    public function getFullChangeSet(EntityManagerInterface $em)
+    {
+        return $em->getUnitOfWork()->getIdentityMap();
     }
 }
