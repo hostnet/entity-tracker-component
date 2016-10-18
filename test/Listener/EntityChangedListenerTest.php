@@ -117,7 +117,7 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->getFullChangeSet($this->em->reveal())
             ->willReturn($this->genericEntityDataProvider($entity));
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity)->willReturn(true);
-        $this->logger->info(Argument::cetera())->shouldBeCalled();
+        $this->logger->debug(Argument::cetera())->shouldBeCalled();
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity)->willReturn(true);
         $this->meta_mutation_provider->createOriginalEntity($this->em->reveal(), $entity)->willReturn($original);
         $this->meta_mutation_provider->getMutatedFields($this->em->reveal(), $entity, $original)->willReturn(['id']);
@@ -171,7 +171,7 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity->reveal())->willReturn(true);
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity->reveal())->willReturn(true);
         $entity->__isInitialized()->willReturn(true);
-        $this->logger->info(Argument::cetera())->shouldBeCalled();
+        $this->logger->debug(Argument::cetera())->shouldBeCalled();
         $this->meta_mutation_provider->createOriginalEntity($this->em->reveal(), $entity)->willReturn($original);
         $this->meta_mutation_provider
             ->getMutatedFields($this->em->reveal(), $entity->reveal(), $original)
