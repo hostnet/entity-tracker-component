@@ -97,7 +97,7 @@ class EntityChangedListener
                 $mutated_fields = $this->meta_mutation_provider->getMutatedFields($em, $entity, $original);
 
                 if (!empty($mutated_fields)) {
-                    $this->logger->info(
+                    $this->logger->debug(
                         'Going to notify a change (preFlush) to {entity_class}, which has {mutated_fields}',
                         [
                             'entity_class' => get_class($entity),
@@ -133,7 +133,7 @@ class EntityChangedListener
 
         $mutated_fields = $this->meta_mutation_provider->getMutatedFields($em, $entity, null);
 
-        $this->logger->info(
+        $this->logger->debug(
             'Going to notify a change (prePersist) to {entity_class}, which has {mutated_fields}',
             [
                 'entity_class' => get_class($entity),
