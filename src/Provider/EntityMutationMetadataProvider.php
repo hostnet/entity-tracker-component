@@ -39,12 +39,14 @@ class EntityMutationMetadataProvider
      * hydrate it with the original data.
      *
      * @param EntityManagerInterface $em
-     * @param mixed                  $data
+     * @param mixed                  $entity
      * @return object
      */
     public function createOriginalEntity(EntityManagerInterface $em, $entity)
     {
-        $data     = $em->getUnitOfWork()->getOriginalEntityData($entity);
+        $uow      = $em->getUnitOfWork();
+        $id_data  = $uow->isInIdentityMap($entity) ? $uow->getEntityIdentifier($entity) : [];
+        $data     = $uow->getOriginalEntityData($entity);
         $metadata = $em->getClassMetadata(get_class($entity));
         $original = $metadata->newInstance();
         $fields   = array_merge($metadata->getFieldNames(), $metadata->getAssociationNames());
@@ -56,6 +58,10 @@ class EntityMutationMetadataProvider
         foreach ($fields as $field) {
             if (isset($data[$field])) {
                 $metadata->setFieldValue($original, $field, $data[$field]);
+                continue;
+            }
+            if (isset($id_data[$field]) && $metadata->isIdentifier($field) && $metadata->isIdGeneratorIdentity()) {
+                $metadata->setFieldValue($original, $field, $id_data[$field]);
             }
         }
 
