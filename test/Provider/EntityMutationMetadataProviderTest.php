@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
 use Hostnet\Component\DatabaseTest\MysqlPersistentConnection;
+use Hostnet\Component\EntityTracker\Provider\Entity\Gallery;
 use Hostnet\Component\EntityTracker\Provider\Entity\Node;
 use Hostnet\Component\EntityTracker\Provider\Entity\Painting;
 
@@ -58,7 +59,6 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         self::assertCount(1, $this->provider->getFullChangeSet($this->em));
     }
 
-
     public function testCreateOriginalEntity()
     {
         $tall_ship = new Painting('Tall Ship');
@@ -70,6 +70,23 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         $tall_ship->name = 'Seven Provinces';
         $original        = $this->provider->createOriginalEntity($this->em, $tall_ship);
         self::assertSame('Tall Ship', $original->name);
+    }
+
+    public function testCreateOriginalEntityIdentity()
+    {
+        $gallery = new Gallery('Riverstreet 12');
+        $gallery->addVisitor('Foo de Bar');
+
+        $this->em->persist($gallery);
+        $this->em->flush();
+
+        $gallery->addVisitor('Bar Baz');
+
+        $this->em->getUnitOfWork()->computeChangeSets();
+        $this->em->flush();
+
+        $original = $this->provider->createOriginalEntity($this->em, $gallery);
+        self::assertSame($gallery->getId(), $original->getId());
     }
 
     /**
