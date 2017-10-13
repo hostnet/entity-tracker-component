@@ -10,6 +10,8 @@ use Hostnet\Component\DatabaseTest\MysqlPersistentConnection;
 use Hostnet\Component\EntityTracker\Provider\Entity\Gallery;
 use Hostnet\Component\EntityTracker\Provider\Entity\Node;
 use Hostnet\Component\EntityTracker\Provider\Entity\Painting;
+use Hostnet\Component\EntityTracker\Provider\Entity\Visit;
+use Hostnet\Component\EntityTracker\Provider\Entity\Visitor;
 
 /**
  * @covers \Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider
@@ -87,6 +89,24 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 
         $original = $this->provider->createOriginalEntity($this->em, $gallery);
         self::assertSame($gallery->getId(), $original->getId());
+    }
+
+    public function testCreateOriginalEntityNonOwning()
+    {
+        $visitor = new Visitor('Henk de Vries');
+        $visitor->addVisit(new Visit(new \DateTime('2016-10-10 10:10:10'), $visitor));
+
+        $this->em->persist($visitor);
+        $this->em->flush();
+
+        $visitor->setName('foobar');
+
+        $this->em->flush();
+
+        $original = $this->provider->createOriginalEntity($this->em, $visitor);
+
+        self::assertSame($visitor->getName(), $original->getName());
+        self::assertSame($visitor->getVisits(), $original->getVisits());
     }
 
     /**
