@@ -58,10 +58,10 @@ class EntityMutationMetadataProvider
         foreach ($fields as $field) {
             if (isset($data[$field])) {
                 $metadata->setFieldValue($original, $field, $data[$field]);
-                continue;
-            }
-            if (isset($id_data[$field]) && $metadata->isIdentifier($field) && $metadata->isIdGeneratorIdentity()) {
+            } elseif (isset($id_data[$field]) && $metadata->isIdentifier($field) && $metadata->isIdGeneratorIdentity()) {
                 $metadata->setFieldValue($original, $field, $id_data[$field]);
+            } elseif ($metadata->isAssociationInverseSide($field)) {
+                $metadata->setFieldValue($original, $field, $metadata->getFieldValue($entity, $field));
             }
         }
 
