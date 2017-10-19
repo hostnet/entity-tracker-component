@@ -114,6 +114,8 @@ class EntityChangedListener
      * annotation. If so, it will dispatch 'Events::ENTITY_CHANGED'
      * with the new entity states.
      *
+     * @deprecated Will be removed. Here so the bundle does not break.
+     *
      * @param LifecycleEventArgs $event
      */
     public function prePersist(LifecycleEventArgs $event)
