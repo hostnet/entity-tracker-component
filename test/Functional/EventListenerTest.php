@@ -116,6 +116,7 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $this->events = [];
 
         $tolkien->books[] = new Book('The Return of the King');
+        $this->em->persist($tolkien);
         $this->em->flush();
 
         self::assertCount(1, $this->events);
@@ -132,6 +133,7 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $tolkien->books[] = new Book('The Hobbit');
         $this->em->persist($tolkien);
         $tolkien->books[] = new Book('The Silmarillion');
+        $this->em->persist($tolkien);
         $this->em->flush();
 
         self::assertCount(2, $this->events);
@@ -207,5 +209,25 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
             'tag' => 'barbaz',
             'tools' => new ArrayCollection([])
         ], $this->events[0][1]);
+    }
+
+    /**
+     * Test "Persistence by reachability". Reachable entities in collections
+     * are persisted by default if there is a cascade persist.
+     *
+     * The listener should also trigger on those.
+     */
+    public function testReachablePersist()
+    {
+        $tolkien = new Author('J. R. R. Tolkien');
+        $this->em->persist($tolkien);
+        $this->em->flush();
+        $this->events = [];
+
+        // Added book and do not call persist for any entities.
+        $tolkien->books[] = new Book('The Return of the King');
+        $this->em->flush();
+
+        self::assertCount(1, $this->events);
     }
 }
