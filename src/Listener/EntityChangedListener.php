@@ -106,4 +106,18 @@ class EntityChangedListener
             }
         }
     }
+
+    /**
+     * Pre Persist event callback
+     *
+     * Checks if the entity contains an @Tracked (or derived)
+     * annotation. If so, it will dispatch 'Events::ENTITY_CHANGED'
+     * with the new entity states.
+     *
+     * @param LifecycleEventArgs $event
+     */
+    public function prePersist(LifecycleEventArgs $event)
+    {
+        // do nothing, will be removed later on.
+    }
 }
