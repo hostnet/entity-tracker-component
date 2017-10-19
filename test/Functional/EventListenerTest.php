@@ -136,8 +136,8 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $this->em->flush();
 
         self::assertCount(2, $this->events);
-        self::assertSame($tolkien->books[0], $this->events[0][0]->getCurrentEntity());
-        self::assertSame($tolkien->books[1], $this->events[1][0]->getCurrentEntity());
+        self::assertTrue($tolkien->books->contains($this->events[0][0]->getCurrentEntity()));
+        self::assertTrue($tolkien->books->contains($this->events[1][0]->getCurrentEntity()));
     }
 
     public function testNewBookPersistAuthorEditBook()

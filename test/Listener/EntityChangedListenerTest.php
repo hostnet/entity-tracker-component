@@ -18,21 +18,22 @@ use Psr\Log\LoggerInterface;
  *
  * @author Yannick de Lange <ydelange@hostnet.nl>
  * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- * @covers Hostnet\Component\EntityTracker\Listener\EntityChangedListener
+ * @covers \Hostnet\Component\EntityTracker\Listener\EntityChangedListener
  */
 class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
 {
     private $meta_annotation_provider;
     private $meta_mutation_provider;
-    private $listener;
     private $event_manager;
     private $em;
     private $logger;
     private $event;
 
     /**
-     * {@inheritdoc}
+     * @var EntityChangedListener
      */
+    private $listener;
+
     protected function setUp()
     {
         $this->meta_annotation_provider = $this->prophesize(EntityAnnotationMetadataProvider::class);
@@ -84,6 +85,7 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
             ->shouldNotBeCalled();
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity)->willReturn(true);
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity)->willReturn(false);
+
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
