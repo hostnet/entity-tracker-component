@@ -193,6 +193,11 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
+    public function testPrePersist()
+    {
+        $this->listener->prePersist(new LifecycleEventArgs(new \stdClass(), $this->em->reveal()));
+    }
+
     /**
      * @param  mixed $entity
      * @return array[]
