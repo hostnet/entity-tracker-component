@@ -59,9 +59,14 @@ class Gallery
 
     /**
      * @param string $name
+     * @return Visitor
      */
     public function addVisitor($name)
     {
-        $this->visitors->add(new Visitor($name));
+        $visitor = new Visitor($name);
+
+        $this->visitors->add($visitor);
+
+        return $visitor;
     }
 }

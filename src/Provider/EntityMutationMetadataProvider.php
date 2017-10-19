@@ -195,7 +195,7 @@ class EntityMutationMetadataProvider
         foreach ($managed as $class => $entities) {
             $metadata = $em->getClassMetadata($class);
 
-            $change_set[$class] = $entities;
+            $change_set[$class] = array_values($entities);
 
             foreach ($entities as $entity) {
                 $this->appendAssociations($em, $metadata, $entity, $change_set);
