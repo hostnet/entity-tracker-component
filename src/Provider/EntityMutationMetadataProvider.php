@@ -196,16 +196,9 @@ class EntityMutationMetadataProvider
             $metadata = $em->getClassMetadata($class);
 
             $change_set[$class] = $entities;
-            foreach ($entities as $entity) {
-                foreach ($this->checkAssociations($em, $metadata, $entity) as list($metadata_child, $child)) {
-                    if (!isset($change_set[$metadata_child->rootEntityName])) {
-                        $change_set[$metadata_child->rootEntityName] = [];
-                    }
 
-                    if (!in_array($child, $change_set[$metadata_child->rootEntityName], true)) {
-                        $change_set[$metadata_child->rootEntityName][] = $child;
-                    }
-                }
+            foreach ($entities as $entity) {
+                $this->appendAssociations($em, $metadata, $entity, $change_set);
             }
         }
 
@@ -220,15 +213,7 @@ class EntityMutationMetadataProvider
                 $change_set[$metadata->rootEntityName][] = $entity;
             }
 
-            foreach ($this->checkAssociations($em, $metadata, $entity) as list($metadata_child, $child)) {
-                if (!isset($change_set[$metadata_child->rootEntityName])) {
-                    $change_set[$metadata_child->rootEntityName] = [];
-                }
-
-                if (!in_array($child, $change_set[$metadata_child->rootEntityName], true)) {
-                    $change_set[$metadata_child->rootEntityName][] = $child;
-                }
-            }
+            $this->appendAssociations($em, $metadata, $entity, $change_set);
         }
 
         return $change_set;
@@ -238,10 +223,14 @@ class EntityMutationMetadataProvider
      * @param EntityManagerInterface $em
      * @param ClassMetadata          $metadata
      * @param mixed                  $entity
-     * @return \Generator
+     * @param array                  $change_set
      */
-    private function checkAssociations(EntityManagerInterface $em, ClassMetadata $metadata, $entity)
-    {
+    private function appendAssociations(
+        EntityManagerInterface $em,
+        ClassMetadata $metadata,
+        $entity,
+        array &$change_set
+    ) {
         // does the entity have any associations?
         // Look for changes in associations of the entity
         foreach ($metadata->associationMappings as $field => $assoc) {
@@ -264,7 +253,13 @@ class EntityMutationMetadataProvider
                     continue;
                 }
 
-                yield [$target_class, $entry];
+                if (!isset($change_set[$target_class->rootEntityName])) {
+                    $change_set[$target_class->rootEntityName] = [];
+                }
+
+                if (!in_array($entry, $change_set[$target_class->rootEntityName], true)) {
+                    $change_set[$target_class->rootEntityName][] = $entry;
+                }
             }
         }
     }
