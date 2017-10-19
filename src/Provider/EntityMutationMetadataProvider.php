@@ -2,9 +2,11 @@
 namespace Hostnet\Component\EntityTracker\Provider;
 
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\PersistentCollection;
 use Doctrine\ORM\UnitOfWork;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -185,6 +187,85 @@ class EntityMutationMetadataProvider
      */
     public function getFullChangeSet(EntityManagerInterface $em)
     {
-        return $em->getUnitOfWork()->getIdentityMap();
+        $change_set = [];
+
+        $managed    = $em->getUnitOfWork()->getIdentityMap();
+        $new        = $em->getUnitOfWork()->getScheduledEntityInsertions();
+
+        foreach ($managed as $class => $entities) {
+            $metadata = $em->getClassMetadata($class);
+
+            $change_set[$class] = $entities;
+            foreach ($entities as $entity) {
+                foreach ($this->checkAssociations($em, $metadata, $entity) as [$metadata_child, $child]) {
+                    if (!isset($change_set[$metadata_child->rootEntityName])) {
+                        $change_set[$metadata_child->rootEntityName] = [];
+                    }
+
+                    if (!in_array($child, $change_set[$metadata_child->rootEntityName], true)) {
+                        $change_set[$metadata_child->rootEntityName][] = $child;
+                    }
+                }
+            }
+        }
+
+        foreach ($new as $entity) {
+            $metadata = $em->getClassMetadata(get_class($entity));
+
+            if (!isset($change_set[$metadata->rootEntityName])) {
+                $change_set[$metadata->rootEntityName] = [];
+            }
+
+            if (!in_array($entity, $change_set[$metadata->rootEntityName], true)) {
+                $change_set[$metadata->rootEntityName][] = $entity;
+            }
+
+            foreach ($this->checkAssociations($em, $metadata, $entity) as [$metadata_child, $child]) {
+                if (!isset($change_set[$metadata_child->rootEntityName])) {
+                    $change_set[$metadata_child->rootEntityName] = [];
+                }
+
+                if (!in_array($child, $change_set[$metadata_child->rootEntityName], true)) {
+                    $change_set[$metadata_child->rootEntityName][] = $child;
+                }
+            }
+        }
+
+        return $change_set;
+    }
+
+    /**
+     * @param EntityManagerInterface $em
+     * @param ClassMetadata          $metadata
+     * @param mixed                  $entity
+     * @return \Generator
+     */
+    private function checkAssociations(EntityManagerInterface $em, ClassMetadata $metadata, $entity)
+    {
+        // does the entity have any associations?
+        // Look for changes in associations of the entity
+        foreach ($metadata->associationMappings as $field => $assoc) {
+            if (($val = $metadata->reflFields[$field]->getValue($entity)) === null) {
+                continue;
+            }
+
+            if ($val instanceof PersistentCollection) {
+                $unwrappedValue = $val->unwrap();
+            } elseif ($val instanceof Collection) {
+                $unwrappedValue = $val;
+            } else {
+                $unwrappedValue = [$val];
+            }
+
+            $target_class = $em->getClassMetadata($assoc['targetEntity']);
+
+            foreach ($unwrappedValue as $key => $entry) {
+                if (UnitOfWork::STATE_NEW !== $em->getUnitOfWork()->getEntityState($entry, UnitOfWork::STATE_NEW)) {
+                    continue;
+                }
+
+                yield [$target_class, $entry];
+            }
+        }
     }
 }
