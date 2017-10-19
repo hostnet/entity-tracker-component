@@ -2,6 +2,7 @@
 namespace Hostnet\Component\EntityTracker\Functional;
 
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -202,10 +203,10 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $this->em->flush();
 
         self::assertSame(['id', 'tag'], $this->events[0][0]->getMutatedFields());
-        self::assertSame([
+        self::assertEquals([
             'id' => null,
             'tag' => 'barbaz',
-            'tools' => []
+            'tools' => new ArrayCollection([])
         ], $this->events[0][1]);
     }
 }
