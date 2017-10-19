@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
+use Doctrine\ORM\UnitOfWork;
 use Hostnet\Component\DatabaseTest\MysqlPersistentConnection;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Functional\Entity\Author;
@@ -76,7 +77,7 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
 
     public function entityChanged(EntityChangedEvent $event)
     {
-        $this->events[] = $event;
+        $this->events[] = [$event, (array) $event->getCurrentEntity()];
     }
 
     public function testNewAuthorNewBook()
@@ -88,7 +89,7 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $this->em->flush();
 
         self::assertCount(1, $this->events);
-        self::assertSame($tolkien->books[0], $this->events[0]->getCurrentEntity());
+        self::assertSame($tolkien->books[0], $this->events[0][0]->getCurrentEntity());
     }
 
     public function testNewBookPersistAuthor()
@@ -104,7 +105,7 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $this->em->flush();
 
         self::assertCount(1, $this->events);
-        self::assertSame($tolkien->books[0], $this->events[0]->getCurrentEntity());
+        self::assertSame($tolkien->books[0], $this->events[0][0]->getCurrentEntity());
     }
 
     public function testNewBook()
@@ -118,7 +119,7 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $this->em->flush();
 
         self::assertCount(1, $this->events);
-        self::assertSame($tolkien->books[0], $this->events[0]->getCurrentEntity());
+        self::assertSame($tolkien->books[0], $this->events[0][0]->getCurrentEntity());
     }
 
     public function testNewBookPersistAuthorNewBook()
@@ -134,8 +135,8 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $this->em->flush();
 
         self::assertCount(2, $this->events);
-        self::assertSame($tolkien->books[0], $this->events[0]->getCurrentEntity());
-        self::assertSame($tolkien->books[1], $this->events[1]->getCurrentEntity());
+        self::assertSame($tolkien->books[0], $this->events[0][0]->getCurrentEntity());
+        self::assertSame($tolkien->books[1], $this->events[1][0]->getCurrentEntity());
     }
 
     public function testNewBookPersistAuthorEditBook()
@@ -150,8 +151,8 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $this->em->flush();
 
         self::assertCount(1, $this->events);
-        self::assertSame('The Silmarillion', $this->events[0]->getCurrentEntity()->title);
-        self::assertSame('Silmarillion', $this->events[0]->getOriginalEntity()->title);
+        self::assertSame('The Silmarillion', $this->events[0][0]->getCurrentEntity()->title);
+        self::assertSame('Silmarillion', $this->events[0][0]->getOriginalEntity()->title);
     }
 
     public function testMutatedAssociations()
@@ -161,7 +162,7 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         $this->em->persist($toolbox);
         $this->em->flush();
 
-        self::assertSame(['id', 'tag'], $this->events[0]->getMutatedFields());
+        self::assertSame(['id', 'tag'], $this->events[0][0]->getMutatedFields());
 
         // Add new Tool to the Toolbox.
         $this->events     = [];
@@ -169,12 +170,42 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
 
         $toolbox->tag = "Work don't play";
         $this->em->flush();
-        self::assertSame(['tag'], $this->events[0]->getMutatedFields());
+        self::assertSame(['tag'], $this->events[0][0]->getMutatedFields());
 
         // Remove a Tool from the Toolbox.
         $this->events = [];
         unset($toolbox->tools[2]->toolbox, $toolbox->tools[2]);
 
         $this->em->flush();
+    }
+
+    public function testPersistDetach()
+    {
+        $toolbox = new Toolbox();
+        $this->em->persist($toolbox);
+        $this->em->detach($toolbox);
+        $this->em->flush();
+
+        self::assertEmpty($this->events);
+        self::assertEquals(UnitOfWork::STATE_NEW, $this->em->getUnitOfWork()->getEntityState($toolbox));
+    }
+
+    public function testCorrectValues()
+    {
+        $toolbox = new Toolbox();
+        $toolbox->tag = 'foobar';
+
+        $this->em->persist($toolbox);
+
+        $toolbox->tag = 'barbaz';
+
+        $this->em->flush();
+
+        self::assertSame(['id', 'tag'], $this->events[0][0]->getMutatedFields());
+        self::assertSame([
+            'id' => null,
+            'tag' => 'barbaz',
+            'tools' => []
+        ], $this->events[0][1]);
     }
 }
