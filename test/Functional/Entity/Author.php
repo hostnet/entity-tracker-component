@@ -1,6 +1,7 @@
 <?php
 namespace Hostnet\Component\EntityTracker\Functional\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -44,5 +45,6 @@ class Author
     public function __construct($name)
     {
         $this->name = $name;
+        $this->books = new ArrayCollection();
     }
 }

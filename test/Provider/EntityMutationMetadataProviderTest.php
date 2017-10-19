@@ -61,6 +61,49 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         self::assertCount(1, $this->provider->getFullChangeSet($this->em));
     }
 
+    public function testChangesNewEntity()
+    {
+        $gallery = new Gallery('foobar street 10');
+
+        $v1 = $gallery->addVisitor('henk');
+        $this->em->persist($gallery);
+
+        $v2 = $gallery->addVisitor('hans');
+
+        self::assertEquals([
+            Gallery::class => [$gallery],
+            Visitor::class => [$v2, $v1],
+        ], $this->provider->getFullChangeSet($this->em));
+    }
+
+    public function testChangesNewEntityFlushed()
+    {
+        $gallery = new Gallery('foobar street 10');
+
+        $v1 = $gallery->addVisitor('henk');
+        $this->em->persist($gallery);
+        $this->em->flush();
+
+        $v2 = $gallery->addVisitor('hans');
+
+        self::assertEquals([
+            Gallery::class => [$gallery],
+            Visitor::class => [$v1, $v2],
+        ], $this->provider->getFullChangeSet($this->em));
+    }
+
+    public function testChangesNewEntityOneToOne()
+    {
+        $root = new Node('root');
+        $root->mirror = $mirror = new Node('mirror');
+
+        $this->em->persist($root);
+
+        self::assertEquals([
+            Node::class => [$root, $mirror],
+        ], $this->provider->getFullChangeSet($this->em));
+    }
+
     public function testCreateOriginalEntity()
     {
         $tall_ship = new Painting('Tall Ship');

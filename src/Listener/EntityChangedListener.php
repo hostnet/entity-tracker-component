@@ -82,21 +82,15 @@ class EntityChangedListener
             }
 
             foreach ($updates as $entity) {
-                if (!$this->meta_mutation_provider->isEntityManaged($em, $entity)
-                    || ($entity instanceof Proxy && !$entity->__isInitialized())
-                ) {
+                if ($entity instanceof Proxy && !$entity->__isInitialized()) {
                     continue;
                 }
 
                 $original = $this->meta_mutation_provider->createOriginalEntity($em, $entity);
 
-                // New entities are handled in the pre-persist event.
-                if (!$original) {
-                    continue;
-                }
                 $mutated_fields = $this->meta_mutation_provider->getMutatedFields($em, $entity, $original);
 
-                if (!empty($mutated_fields)) {
+                if (null === $original || !empty($mutated_fields)) {
                     $this->logger->debug(
                         'Going to notify a change (preFlush) to {entity_class}, which has {mutated_fields}',
                         [
@@ -120,30 +114,12 @@ class EntityChangedListener
      * annotation. If so, it will dispatch 'Events::ENTITY_CHANGED'
      * with the new entity states.
      *
+     * @deprecated Will be removed. Here so the bundle does not break.
+     *
      * @param LifecycleEventArgs $event
      */
     public function prePersist(LifecycleEventArgs $event)
     {
-        $em     = $event->getEntityManager();
-        $entity = $event->getEntity();
-
-        if (false === $this->meta_annotation_provider->isTracked($em, $entity)) {
-            return;
-        }
-
-        $mutated_fields = $this->meta_mutation_provider->getMutatedFields($em, $entity, null);
-
-        $this->logger->debug(
-            'Going to notify a change (prePersist) to {entity_class}, which has {mutated_fields}',
-            [
-                'entity_class' => get_class($entity),
-                'mutated_fields' => $mutated_fields
-            ]
-        );
-
-        $em->getEventManager()->dispatchEvent(
-            Events::ENTITY_CHANGED,
-            new EntityChangedEvent($em, $entity, null, $mutated_fields)
-        );
+        // do nothing, will be removed later on.
     }
 }

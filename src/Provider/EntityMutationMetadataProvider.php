@@ -2,9 +2,11 @@
 namespace Hostnet\Component\EntityTracker\Provider;
 
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\PersistentCollection;
 use Doctrine\ORM\UnitOfWork;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -185,6 +187,80 @@ class EntityMutationMetadataProvider
      */
     public function getFullChangeSet(EntityManagerInterface $em)
     {
-        return $em->getUnitOfWork()->getIdentityMap();
+        $change_set = [];
+
+        $managed    = $em->getUnitOfWork()->getIdentityMap();
+        $new        = $em->getUnitOfWork()->getScheduledEntityInsertions();
+
+        foreach ($managed as $class => $entities) {
+            $metadata = $em->getClassMetadata($class);
+
+            $change_set[$class] = array_values($entities);
+
+            foreach ($entities as $entity) {
+                $this->appendAssociations($em, $metadata, $entity, $change_set);
+            }
+        }
+
+        foreach ($new as $entity) {
+            $metadata = $em->getClassMetadata(get_class($entity));
+
+            if (!isset($change_set[$metadata->rootEntityName])) {
+                $change_set[$metadata->rootEntityName] = [];
+            }
+
+            if (!in_array($entity, $change_set[$metadata->rootEntityName], true)) {
+                $change_set[$metadata->rootEntityName][] = $entity;
+            }
+
+            $this->appendAssociations($em, $metadata, $entity, $change_set);
+        }
+
+        return $change_set;
+    }
+
+    /**
+     * @param EntityManagerInterface $em
+     * @param ClassMetadata          $metadata
+     * @param mixed                  $entity
+     * @param array                  $change_set
+     */
+    private function appendAssociations(
+        EntityManagerInterface $em,
+        ClassMetadata $metadata,
+        $entity,
+        array &$change_set
+    ) {
+        // does the entity have any associations?
+        // Look for changes in associations of the entity
+        foreach ($metadata->associationMappings as $field => $assoc) {
+            if (($val = $metadata->reflFields[$field]->getValue($entity)) === null) {
+                continue;
+            }
+
+            if ($val instanceof PersistentCollection) {
+                $unwrappedValue = $val->unwrap();
+            } elseif ($val instanceof Collection) {
+                $unwrappedValue = $val;
+            } else {
+                $unwrappedValue = [$val];
+            }
+
+            $target_class = $em->getClassMetadata($assoc['targetEntity']);
+
+            foreach ($unwrappedValue as $key => $entry) {
+                if (UnitOfWork::STATE_NEW !== $em->getUnitOfWork()->getEntityState($entry, UnitOfWork::STATE_NEW)) {
+                    continue;
+                }
+
+                if (!isset($change_set[$target_class->rootEntityName])) {
+                    $change_set[$target_class->rootEntityName] = [];
+                }
+
+                if (!in_array($entry, $change_set[$target_class->rootEntityName], true)) {
+                    $change_set[$target_class->rootEntityName][] = $entry;
+                }
+            }
+        }
     }
 }

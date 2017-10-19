@@ -44,6 +44,6 @@ class Toolbox
         foreach ($tools as $tool) {
             $tool->toolbox = $this;
         }
-        $this->tools = $tools;
+        $this->tools = new ArrayCollection($tools);
     }
 }
