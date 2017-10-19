@@ -70,6 +70,7 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
         );
 
         $event_manager->addEventListener('preFlush', $entity_changed_listener);
+        $event_manager->addEventListener('prePersist', $entity_changed_listener);
         $event_manager->addEventListener('entityChanged', $this);
 
         $this->events = [];
