@@ -197,7 +197,7 @@ class EntityMutationMetadataProvider
 
             $change_set[$class] = $entities;
             foreach ($entities as $entity) {
-                foreach ($this->checkAssociations($em, $metadata, $entity) as [$metadata_child, $child]) {
+                foreach ($this->checkAssociations($em, $metadata, $entity) as list($metadata_child, $child)) {
                     if (!isset($change_set[$metadata_child->rootEntityName])) {
                         $change_set[$metadata_child->rootEntityName] = [];
                     }
@@ -220,7 +220,7 @@ class EntityMutationMetadataProvider
                 $change_set[$metadata->rootEntityName][] = $entity;
             }
 
-            foreach ($this->checkAssociations($em, $metadata, $entity) as [$metadata_child, $child]) {
+            foreach ($this->checkAssociations($em, $metadata, $entity) as list($metadata_child, $child)) {
                 if (!isset($change_set[$metadata_child->rootEntityName])) {
                     $change_set[$metadata_child->rootEntityName] = [];
                 }
