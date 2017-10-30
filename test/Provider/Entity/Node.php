@@ -1,6 +1,7 @@
 <?php
 namespace Hostnet\Component\EntityTracker\Provider\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -53,5 +54,6 @@ class Node
     public function __construct($name)
     {
         $this->name = $name;
+        $this->children = new ArrayCollection();
     }
 }
