@@ -7,6 +7,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
 use Hostnet\Component\DatabaseTest\MysqlPersistentConnection;
+use Hostnet\Component\EntityTracker\Provider\Entity\A;
+use Hostnet\Component\EntityTracker\Provider\Entity\B;
 use Hostnet\Component\EntityTracker\Provider\Entity\Gallery;
 use Hostnet\Component\EntityTracker\Provider\Entity\Node;
 use Hostnet\Component\EntityTracker\Provider\Entity\Painting;
@@ -90,6 +92,28 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
             Gallery::class => [$gallery],
             Visitor::class => [$v1, $v2],
         ], $this->provider->getFullChangeSet($this->em));
+    }
+
+    public function testChangesNewEntityFlushedBadOrder()
+    {
+        $a = new A();
+        $b1 = new B();
+        $b2 = new B();
+
+        $a->bees->add($b1);
+        $b1->a = $a;
+
+        $this->em->persist($a);
+        $this->em->persist($b1);
+        $this->em->flush();
+
+        $a->bees->add($b2);
+        $b2->a = $a;
+
+        $change_set = $this->provider->getFullChangeSet($this->em);
+
+        self::assertCount(1, $change_set[A::class]);
+        self::assertCount(2, $change_set[B::class]);
     }
 
     public function testChangesNewEntityOneToOne()
