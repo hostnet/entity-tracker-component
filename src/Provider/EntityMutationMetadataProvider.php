@@ -195,32 +195,45 @@ class EntityMutationMetadataProvider
         foreach ($managed as $class => $entities) {
             $metadata = $em->getClassMetadata($class);
 
-            if (isset($change_set[$class])) {
-                $change_set[$class] = array_merge($change_set[$class], array_values($entities));
-            } else {
-                $change_set[$class] = array_values($entities);
-            }
-
             foreach ($entities as $entity) {
-                $this->appendAssociations($em, $metadata, $entity, $change_set);
+                $this->addToChangeSet($em, $metadata, $entity, $change_set);
             }
         }
 
         foreach ($new as $entity) {
             $metadata = $em->getClassMetadata(get_class($entity));
 
-            if (!isset($change_set[$metadata->rootEntityName])) {
-                $change_set[$metadata->rootEntityName] = [];
-            }
-
-            if (!in_array($entity, $change_set[$metadata->rootEntityName], true)) {
-                $change_set[$metadata->rootEntityName][] = $entity;
-            }
-
-            $this->appendAssociations($em, $metadata, $entity, $change_set);
+            $this->addToChangeSet($em, $metadata, $entity, $change_set);
         }
 
         return $change_set;
+    }
+
+    /**
+     * Add an entity to the change set. This also adds any elements to the
+     * change set that are in the associations.
+     *
+     * @param EntityManagerInterface $em
+     * @param ClassMetadata          $metadata
+     * @param mixed                  $entity
+     * @param array                  $change_set
+     */
+    private function addToChangeSet(
+        EntityManagerInterface $em,
+        ClassMetadata $metadata,
+        $entity,
+        array &$change_set
+    ) {
+        if (!isset($change_set[$metadata->rootEntityName])) {
+            $change_set[$metadata->rootEntityName] = [];
+        }
+
+        if (!in_array($entity, $change_set[$metadata->rootEntityName], true)) {
+            $change_set[$metadata->rootEntityName][] = $entity;
+
+            // recursively find all changes
+            $this->appendAssociations($em, $metadata, $entity, $change_set);
+        }
     }
 
     /**
@@ -257,13 +270,7 @@ class EntityMutationMetadataProvider
                     continue;
                 }
 
-                if (!isset($change_set[$target_class->rootEntityName])) {
-                    $change_set[$target_class->rootEntityName] = [];
-                }
-
-                if (!in_array($entry, $change_set[$target_class->rootEntityName], true)) {
-                    $change_set[$target_class->rootEntityName][] = $entry;
-                }
+                $this->addToChangeSet($em, $target_class, $entry, $change_set);
             }
         }
     }

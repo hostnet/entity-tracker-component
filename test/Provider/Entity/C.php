@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity()
  */
-class B
+class C
 {
     /**
      * @ORM\Id()
@@ -19,20 +19,13 @@ class B
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="A", inversedBy="bees")
-     * @var A
+     * @ORM\ManyToOne(targetEntity="B", inversedBy="cees")
+     * @var C
      */
-    public $a;
-
-    /**
-     * @ORM\OneToMany(targetEntity="C", mappedBy="c", cascade={"persist"})
-     * @var c[]|ArrayCollection
-     */
-    public $cees;
+    public $b;
 
     public function __construct()
     {
-        $this->cees = new ArrayCollection();
     }
 
 }
