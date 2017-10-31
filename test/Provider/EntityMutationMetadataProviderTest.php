@@ -9,6 +9,7 @@ use Doctrine\ORM\Tools\Setup;
 use Hostnet\Component\DatabaseTest\MysqlPersistentConnection;
 use Hostnet\Component\EntityTracker\Provider\Entity\A;
 use Hostnet\Component\EntityTracker\Provider\Entity\B;
+use Hostnet\Component\EntityTracker\Provider\Entity\C;
 use Hostnet\Component\EntityTracker\Provider\Entity\Gallery;
 use Hostnet\Component\EntityTracker\Provider\Entity\Node;
 use Hostnet\Component\EntityTracker\Provider\Entity\Painting;
@@ -99,6 +100,7 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         $a = new A();
         $b1 = new B();
         $b2 = new B();
+        $c = new C();
 
         $a->bees->add($b1);
         $b1->a = $a;
@@ -110,10 +112,14 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
         $a->bees->add($b2);
         $b2->a = $a;
 
+        $b2->cees->add($c);
+        $c->b = $b2;
+
         $change_set = $this->provider->getFullChangeSet($this->em);
 
         self::assertCount(1, $change_set[A::class]);
         self::assertCount(2, $change_set[B::class]);
+        self::assertCount(1, $change_set[C::class]);
     }
 
     public function testChangesNewEntityOneToOne()
@@ -123,9 +129,7 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->em->persist($root);
 
-        self::assertEquals([
-            Node::class => [$root, $mirror],
-        ], $this->provider->getFullChangeSet($this->em));
+        self::assertEquals([Node::class => [$root]], $this->provider->getFullChangeSet($this->em));
     }
 
     public function testCreateOriginalEntity()
