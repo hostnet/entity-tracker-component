@@ -270,6 +270,10 @@ class EntityMutationMetadataProvider
                     continue;
                 }
 
+                if (!$assoc['isCascadePersist']) {
+                    continue;
+                }
+
                 $this->addToChangeSet($em, $target_class, $entry, $change_set);
             }
         }

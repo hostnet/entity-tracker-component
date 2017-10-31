@@ -129,9 +129,7 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->em->persist($root);
 
-        self::assertEquals([
-            Node::class => [$root, $mirror],
-        ], $this->provider->getFullChangeSet($this->em));
+        self::assertEquals([Node::class => [$root]], $this->provider->getFullChangeSet($this->em));
     }
 
     public function testCreateOriginalEntity()
