@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Provider;
 
 use Doctrine\Common\Annotations\Reader;
@@ -11,9 +16,6 @@ use Doctrine\ORM\UnitOfWork;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-/**
- * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- */
 class EntityMutationMetadataProvider
 {
     /**
@@ -82,7 +84,7 @@ class EntityMutationMetadataProvider
     public function getMutatedFields(EntityManagerInterface $em, $entity, $original)
     {
         $mutation_data = [];
-        /* @var $metadata \Doctrine\ORM\Mapping\ClassMetadata */
+        /** @var \Doctrine\ORM\Mapping\ClassMetadata $metadata */
         $metadata     = $em->getClassMetadata(get_class($entity));
         $fields       = $metadata->getFieldNames();
         $associations = [];
@@ -189,8 +191,8 @@ class EntityMutationMetadataProvider
     {
         $change_set = [];
 
-        $managed    = $em->getUnitOfWork()->getIdentityMap();
-        $new        = $em->getUnitOfWork()->getScheduledEntityInsertions();
+        $managed = $em->getUnitOfWork()->getIdentityMap();
+        $new     = $em->getUnitOfWork()->getScheduledEntityInsertions();
 
         foreach ($managed as $class => $entities) {
             $metadata = $em->getClassMetadata($class);

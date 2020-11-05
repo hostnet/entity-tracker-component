@@ -11,7 +11,7 @@
     },
     "require-dev": {
         "hostnet/database-test-lib": "^1.0.5",
-        "hostnet/phpcs-tool":        "^4.0.8",
+        "hostnet/phpcs-tool":        "^8.3",
         "phpunit/phpunit":           "^5.5.0",
         "symfony/var-dumper":        "^3.1"
     },

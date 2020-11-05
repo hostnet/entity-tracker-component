@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2016-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Functional\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -44,7 +49,7 @@ class Author
      */
     public function __construct($name)
     {
-        $this->name = $name;
+        $this->name  = $name;
         $this->books = new ArrayCollection();
     }
 }

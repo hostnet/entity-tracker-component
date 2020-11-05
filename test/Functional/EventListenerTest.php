@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2016-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Functional;
 
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -17,11 +22,12 @@ use Hostnet\Component\EntityTracker\Functional\Entity\Toolbox;
 use Hostnet\Component\EntityTracker\Listener\EntityChangedListener;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @coversNothing
  */
-class EventListenerTest extends \PHPUnit_Framework_TestCase
+class EventListenerTest extends TestCase
 {
     /**
      * @var EntityChangedEvent[]
@@ -195,7 +201,7 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
 
     public function testCorrectValues()
     {
-        $toolbox = new Toolbox();
+        $toolbox      = new Toolbox();
         $toolbox->tag = 'foobar';
 
         $this->em->persist($toolbox);
@@ -206,9 +212,9 @@ class EventListenerTest extends \PHPUnit_Framework_TestCase
 
         self::assertSame(['id', 'tag'], $this->events[0][0]->getMutatedFields());
         self::assertEquals([
-            'id' => null,
-            'tag' => 'barbaz',
-            'tools' => new ArrayCollection([])
+            'id'    => null,
+            'tag'   => 'barbaz',
+            'tools' => new ArrayCollection([]),
         ], $this->events[0][1]);
     }
 

@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Listener;
 
 use Doctrine\Common\EventManager;
@@ -10,17 +15,16 @@ use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Events;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
 
 /**
  * Listener for the Entities that use the Mutation Annotation.
  *
- * @author Yannick de Lange <ydelange@hostnet.nl>
- * @author Iltar van der Berg <ivanderberg@hostnet.nl>
  * @covers \Hostnet\Component\EntityTracker\Listener\EntityChangedListener
  */
-class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
+class EntityChangedListenerTest extends TestCase
 {
     private $meta_annotation_provider;
     private $meta_mutation_provider;
@@ -188,7 +192,6 @@ class EntityChangedListenerTest extends \PHPUnit_Framework_TestCase
         $this->event_manager
             ->dispatchEvent(Events::ENTITY_CHANGED, Argument::type(EntityChangedEvent::class))
             ->shouldBeCalledTimes(1);
-
 
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
