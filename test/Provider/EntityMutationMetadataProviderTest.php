@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Provider;
 
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -15,11 +20,12 @@ use Hostnet\Component\EntityTracker\Provider\Entity\Node;
 use Hostnet\Component\EntityTracker\Provider\Entity\Painting;
 use Hostnet\Component\EntityTracker\Provider\Entity\Visit;
 use Hostnet\Component\EntityTracker\Provider\Entity\Visitor;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider
  */
-class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
+class EntityMutationMetadataProviderTest extends TestCase
 {
     /**
      * @var MysqlPersistentConnection
@@ -97,10 +103,10 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 
     public function testChangesNewEntityFlushedBadOrder()
     {
-        $a = new A();
+        $a  = new A();
         $b1 = new B();
         $b2 = new B();
-        $c = new C();
+        $c  = new C();
 
         $a->bees->add($b1);
         $b1->a = $a;
@@ -124,7 +130,7 @@ class EntityMutationMetadataProviderTest extends \PHPUnit_Framework_TestCase
 
     public function testChangesNewEntityOneToOne()
     {
-        $root = new Node('root');
+        $root         = new Node('root');
         $root->mirror = $mirror = new Node('mirror');
 
         $this->em->persist($root);

@@ -1,15 +1,20 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Annotation;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Hostnet\Component\EntityTracker\Mocked\MockEntity;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+use PHPUnit\Framework\TestCase;
 
 /**
- * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- * @covers Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider
+ * @covers \Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider
  */
-class EntityAnnotationMetadataProviderTest extends \PHPUnit_Framework_TestCase
+class EntityAnnotationMetadataProviderTest extends TestCase
 {
     private $reader;
     private $provider;
@@ -54,7 +59,7 @@ class EntityAnnotationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [new \stdClass(), false],
-            [new MockEntity(), true]
+            [new MockEntity(), true],
         ];
     }
 
@@ -99,7 +104,7 @@ class EntityAnnotationMetadataProviderTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [new \stdClass(), null, false],
-            [new MockEntity(), new Tracked(), true]
+            [new MockEntity(), new Tracked(), true],
         ];
     }
 
@@ -120,7 +125,7 @@ class EntityAnnotationMetadataProviderTest extends \PHPUnit_Framework_TestCase
                 'getFieldValue',
                 'getAssociationTargetClass',
                 'getIdentifierValues',
-                'getReflectionClass'
+                'getReflectionClass',
             ])
             ->setConstructorArgs([get_class($entity)])
             ->getMock();

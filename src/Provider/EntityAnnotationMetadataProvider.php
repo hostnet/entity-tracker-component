@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Provider;
 
 use Doctrine\Common\Annotations\Reader;
@@ -7,9 +12,6 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\UnitOfWork;
 use Hostnet\Component\EntityTracker\Annotation\Tracked;
 
-/**
- * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- */
 class EntityAnnotationMetadataProvider
 {
     /**

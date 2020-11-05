@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Listener;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
@@ -16,8 +21,6 @@ use Psr\Log\NullLogger;
  *
  * This listener will fire an "Events::ENTITY_CHANGED" event
  * per entity that is changed.
- * @author Yannick de Lange <ydelange@hostnet.nl>
- * @author Iltar van der Berg <ivanderberg@hostnet.nl>
  */
 class EntityChangedListener
 {
@@ -48,8 +51,8 @@ class EntityChangedListener
      */
     public function __construct(
         EntityAnnotationMetadataProvider $meta_annotation_provider,
-        EntityMutationMetadataProvider   $meta_mutation_provider,
-        LoggerInterface                  $logger = null
+        EntityMutationMetadataProvider $meta_mutation_provider,
+        LoggerInterface $logger = null
     ) {
         $this->meta_annotation_provider = $meta_annotation_provider;
         $this->meta_mutation_provider   = $meta_mutation_provider;
@@ -94,8 +97,8 @@ class EntityChangedListener
                     $this->logger->debug(
                         'Going to notify a change (preFlush) to {entity_class}, which has {mutated_fields}',
                         [
-                            'entity_class' => get_class($entity),
-                            'mutated_fields' => $mutated_fields
+                            'entity_class'   => get_class($entity),
+                            'mutated_fields' => $mutated_fields,
                         ]
                     );
                     $em->getEventManager()->dispatchEvent(

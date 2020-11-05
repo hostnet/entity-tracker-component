@@ -1,12 +1,18 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Event;
 
 use Hostnet\Component\EntityTracker\Mocked\MockEntity;
+use PHPUnit\Framework\TestCase;
 
 /**
- * @author Iltar van der Berg <ivanderberg@hostnet.nl>
+ * @covers \Hostnet\Component\EntityTracker\Event\EntityChangedEvent
  */
-class EntityChangedEventTest extends \PHPUnit_Framework_TestCase
+class EntityChangedEventTest extends TestCase
 {
     public function testAll()
     {

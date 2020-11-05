@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2016-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityTracker\Provider\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -41,7 +46,6 @@ class Node
      */
     public $mirror;
 
-
     /**
      * @ORM\OneToOne(targetEntity="Node", mappedBy="mirror")
      * @var Node
@@ -53,7 +57,7 @@ class Node
      */
     public function __construct($name)
     {
-        $this->name = $name;
+        $this->name     = $name;
         $this->children = new ArrayCollection();
     }
 }
