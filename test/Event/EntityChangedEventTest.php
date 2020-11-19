@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Hostnet\Component\EntityTracker\Event;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Hostnet\Component\EntityTracker\Mocked\MockEntity;
 use PHPUnit\Framework\TestCase;
 
@@ -14,9 +15,9 @@ use PHPUnit\Framework\TestCase;
  */
 class EntityChangedEventTest extends TestCase
 {
-    public function testAll()
+    public function testAll(): void
     {
-        $em              = $this->createMock('Doctrine\ORM\EntityManagerInterface');
+        $em              = $this->createMock(EntityManagerInterface::class);
         $current_entity  = new MockEntity();
         $original_entity = new MockEntity();
         $mutated_fields  = ['test'];

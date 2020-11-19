@@ -44,10 +44,7 @@ class EventListenerTest extends TestCase
      */
     private $connection;
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->connection = new MysqlPersistentConnection();
         $params           = $this->connection->getConnectionParams();
@@ -82,12 +79,12 @@ class EventListenerTest extends TestCase
         $this->events = [];
     }
 
-    public function entityChanged(EntityChangedEvent $event)
+    public function entityChanged(EntityChangedEvent $event): void
     {
         $this->events[] = [$event, (array) $event->getCurrentEntity()];
     }
 
-    public function testNewAuthorNewBook()
+    public function testNewAuthorNewBook(): void
     {
         $tolkien          = new Author('J. R. R. Tolkien');
         $tolkien->books[] = new Book('The Fellowship of the Ring');
@@ -99,7 +96,7 @@ class EventListenerTest extends TestCase
         self::assertSame($tolkien->books[0], $this->events[0][0]->getCurrentEntity());
     }
 
-    public function testNewBookPersistAuthor()
+    public function testNewBookPersistAuthor(): void
     {
         $tolkien = new Author('J. R. R. Tolkien');
         $this->em->persist($tolkien);
@@ -115,7 +112,7 @@ class EventListenerTest extends TestCase
         self::assertSame($tolkien->books[0], $this->events[0][0]->getCurrentEntity());
     }
 
-    public function testNewBook()
+    public function testNewBook(): void
     {
         $tolkien = new Author('J. R. R. Tolkien');
         $this->em->persist($tolkien);
@@ -130,7 +127,7 @@ class EventListenerTest extends TestCase
         self::assertSame($tolkien->books[0], $this->events[0][0]->getCurrentEntity());
     }
 
-    public function testNewBookPersistAuthorNewBook()
+    public function testNewBookPersistAuthorNewBook(): void
     {
         $tolkien = new Author('J. R. R. Tolkien');
         $this->em->persist($tolkien);
@@ -148,7 +145,7 @@ class EventListenerTest extends TestCase
         self::assertTrue($tolkien->books->contains($this->events[1][0]->getCurrentEntity()));
     }
 
-    public function testNewBookPersistAuthorEditBook()
+    public function testNewBookPersistAuthorEditBook(): void
     {
         $tolkien          = new Author('J. R. R. Tolkien');
         $tolkien->books[] = new Book('Silmarillion');
@@ -164,7 +161,7 @@ class EventListenerTest extends TestCase
         self::assertSame('Silmarillion', $this->events[0][0]->getOriginalEntity()->title);
     }
 
-    public function testMutatedAssociations()
+    public function testMutatedAssociations(): void
     {
         // Create new Toolbox with tools.
         $toolbox = new Toolbox(new Tool('pliers'), new Tool('hammer'));
@@ -188,7 +185,7 @@ class EventListenerTest extends TestCase
         $this->em->flush();
     }
 
-    public function testPersistDetach()
+    public function testPersistDetach(): void
     {
         $toolbox = new Toolbox();
         $this->em->persist($toolbox);
@@ -199,7 +196,7 @@ class EventListenerTest extends TestCase
         self::assertEquals(UnitOfWork::STATE_NEW, $this->em->getUnitOfWork()->getEntityState($toolbox));
     }
 
-    public function testCorrectValues()
+    public function testCorrectValues(): void
     {
         $toolbox      = new Toolbox();
         $toolbox->tag = 'foobar';
@@ -224,7 +221,7 @@ class EventListenerTest extends TestCase
      *
      * The listener should also trigger on those.
      */
-    public function testReachablePersist()
+    public function testReachablePersist(): void
     {
         $tolkien = new Author('J. R. R. Tolkien');
         $this->em->persist($tolkien);

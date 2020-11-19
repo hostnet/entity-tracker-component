@@ -42,10 +42,7 @@ class EntityMutationMetadataProviderTest extends TestCase
      */
     private $provider;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setUp()
+    public function setUp(): void
     {
         $this->connection = new MysqlPersistentConnection();
         $params           = $this->connection->getConnectionParams();
@@ -61,7 +58,7 @@ class EntityMutationMetadataProviderTest extends TestCase
         $this->provider = new EntityMutationMetadataProvider(new AnnotationReader());
     }
 
-    public function testChanges()
+    public function testChanges(): void
     {
         $sunflowers = new Painting('Sunflowers');
         $this->em->persist($sunflowers);
@@ -70,7 +67,7 @@ class EntityMutationMetadataProviderTest extends TestCase
         self::assertCount(1, $this->provider->getFullChangeSet($this->em));
     }
 
-    public function testChangesNewEntity()
+    public function testChangesNewEntity(): void
     {
         $gallery = new Gallery('foobar street 10');
 
@@ -85,7 +82,7 @@ class EntityMutationMetadataProviderTest extends TestCase
         ], $this->provider->getFullChangeSet($this->em));
     }
 
-    public function testChangesNewEntityFlushed()
+    public function testChangesNewEntityFlushed(): void
     {
         $gallery = new Gallery('foobar street 10');
 
@@ -101,7 +98,7 @@ class EntityMutationMetadataProviderTest extends TestCase
         ], $this->provider->getFullChangeSet($this->em));
     }
 
-    public function testChangesNewEntityFlushedBadOrder()
+    public function testChangesNewEntityFlushedBadOrder(): void
     {
         $a  = new A();
         $b1 = new B();
@@ -128,7 +125,7 @@ class EntityMutationMetadataProviderTest extends TestCase
         self::assertCount(1, $change_set[C::class]);
     }
 
-    public function testChangesNewEntityOneToOne()
+    public function testChangesNewEntityOneToOne(): void
     {
         $root         = new Node('root');
         $root->mirror = $mirror = new Node('mirror');
@@ -138,7 +135,7 @@ class EntityMutationMetadataProviderTest extends TestCase
         self::assertEquals([Node::class => [$root]], $this->provider->getFullChangeSet($this->em));
     }
 
-    public function testCreateOriginalEntity()
+    public function testCreateOriginalEntity(): void
     {
         $tall_ship = new Painting('Tall Ship');
         self::assertNull($this->provider->createOriginalEntity($this->em, $tall_ship));
@@ -151,7 +148,7 @@ class EntityMutationMetadataProviderTest extends TestCase
         self::assertSame('Tall Ship', $original->name);
     }
 
-    public function testCreateOriginalEntityIdentity()
+    public function testCreateOriginalEntityIdentity(): void
     {
         $gallery = new Gallery('Riverstreet 12');
         $gallery->addVisitor('Foo de Bar');
@@ -168,7 +165,7 @@ class EntityMutationMetadataProviderTest extends TestCase
         self::assertSame($gallery->getId(), $original->getId());
     }
 
-    public function testCreateOriginalEntityNonOwning()
+    public function testCreateOriginalEntityNonOwning(): void
     {
         $visitor = new Visitor('Henk de Vries');
         $visitor->addVisit(new Visit(new \DateTime('2016-10-10 10:10:10'), $visitor));
@@ -189,7 +186,7 @@ class EntityMutationMetadataProviderTest extends TestCase
     /**
      * @depends testCreateOriginalEntity
      */
-    public function testGetMutatedFields()
+    public function testGetMutatedFields(): void
     {
         // Simple new entity
         $venus = new Painting('The birth of Aphrodite');
@@ -214,7 +211,7 @@ class EntityMutationMetadataProviderTest extends TestCase
         self::assertSame(['parent'], $this->provider->getMutatedFields($this->em, $end, $original));
     }
 
-    public function testIsEntityManaged()
+    public function testIsEntityManaged(): void
     {
         $apples = new Painting('Apples of Cezanne');
         self::assertFalse($this->provider->isEntityManaged($this->em, $apples));

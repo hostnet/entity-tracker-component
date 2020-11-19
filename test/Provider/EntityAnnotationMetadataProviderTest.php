@@ -9,6 +9,7 @@ namespace Hostnet\Component\EntityTracker\Annotation;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Hostnet\Component\EntityTracker\Mocked\MockEntity;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -20,7 +21,7 @@ class EntityAnnotationMetadataProviderTest extends TestCase
     private $provider;
     private $em;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->reader   = new AnnotationReader();
         $this->provider = new EntityAnnotationMetadataProvider($this->reader);
@@ -30,7 +31,7 @@ class EntityAnnotationMetadataProviderTest extends TestCase
     /**
      * @dataProvider isTrackedProvider
      */
-    public function testIsTracked($entity, $expected_output)
+    public function testIsTracked($entity, $expected_output): void
     {
         $class      = get_class($entity);
         $reflection = new \ReflectionClass($class);
@@ -52,10 +53,7 @@ class EntityAnnotationMetadataProviderTest extends TestCase
         );
     }
 
-    /**
-     * @return array[]
-     */
-    public function isTrackedProvider()
+    public function isTrackedProvider(): iterable
     {
         return [
             [new \stdClass(), false],
@@ -69,7 +67,7 @@ class EntityAnnotationMetadataProviderTest extends TestCase
      * @param mixed $annotation
      * @param bool  $has
      */
-    public function testGetAnnotationFromEntity($entity, $annotation, $has)
+    public function testGetAnnotationFromEntity($entity, $annotation, $has): void
     {
         $class    = get_class($entity);
         $metadata = $this
@@ -100,7 +98,7 @@ class EntityAnnotationMetadataProviderTest extends TestCase
     /**
      * @return array
      */
-    public function getAnnotationFromEntityProvider()
+    public function getAnnotationFromEntityProvider(): iterable
     {
         return [
             [new \stdClass(), null, false],
@@ -112,9 +110,9 @@ class EntityAnnotationMetadataProviderTest extends TestCase
      * @param mixed    $entity
      * @param string[] $field_names
      * @param string[] $assoc_names
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
-    private function buildMetadata($entity, array $field_names, array $assoc_names)
+    private function buildMetadata($entity, array $field_names, array $assoc_names): MockObject
     {
         $meta = $this
             ->getMockBuilder('Doctrine\ORM\Mapping\ClassMetadata')
