@@ -17,6 +17,7 @@ use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -26,6 +27,8 @@ use Psr\Log\LoggerInterface;
  */
 class EntityChangedListenerTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $meta_annotation_provider;
     private $meta_mutation_provider;
     private $event_manager;
@@ -38,7 +41,7 @@ class EntityChangedListenerTest extends TestCase
      */
     private $listener;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->meta_annotation_provider = $this->prophesize(EntityAnnotationMetadataProvider::class);
         $this->meta_mutation_provider   = $this->prophesize(EntityMutationMetadataProvider::class);
@@ -56,7 +59,7 @@ class EntityChangedListenerTest extends TestCase
         );
     }
 
-    public function testPreFlushNoAnnotation()
+    public function testPreFlushNoAnnotation(): void
     {
         $entity = new \stdClass();
         $this->meta_mutation_provider
@@ -69,7 +72,7 @@ class EntityChangedListenerTest extends TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
-    public function testPreFlushEmptyChanges()
+    public function testPreFlushEmptyChanges(): void
     {
         $this->meta_mutation_provider->getFullChangeSet($this->em->reveal())->willReturn([[]]);
         $this->event_manager
@@ -78,7 +81,7 @@ class EntityChangedListenerTest extends TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
-    public function testPreFlushUnmanaged()
+    public function testPreFlushUnmanaged(): void
     {
         $entity = new \stdClass();
 
@@ -97,7 +100,7 @@ class EntityChangedListenerTest extends TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
-    public function testPreFlushWithoutMutatedFields()
+    public function testPreFlushWithoutMutatedFields(): void
     {
         $entity   = new \stdClass();
         $original = new \stdClass();
@@ -116,7 +119,7 @@ class EntityChangedListenerTest extends TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
-    public function testPreFlushWithMutatedFields()
+    public function testPreFlushWithMutatedFields(): void
     {
         $entity       = new \stdClass();
         $entity->id   = 1;
@@ -138,7 +141,7 @@ class EntityChangedListenerTest extends TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
-    public function testPreFlushWithNewEntity()
+    public function testPreFlushWithNewEntity(): void
     {
         $entity = new \stdClass();
 
@@ -157,7 +160,7 @@ class EntityChangedListenerTest extends TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
-    public function testPreFlushWithProxy()
+    public function testPreFlushWithProxy(): void
     {
         $entity = $this->prophesize(Proxy::class)->reveal();
         $this->meta_mutation_provider
@@ -171,7 +174,7 @@ class EntityChangedListenerTest extends TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
-    public function testPreFlushWithInitializedProxy()
+    public function testPreFlushWithInitializedProxy(): void
     {
         $original     = new \stdClass();
         $original->id = 0;
@@ -196,8 +199,10 @@ class EntityChangedListenerTest extends TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
-    public function testPrePersist()
+    public function testPrePersist(): void
     {
+        // This is a smoke test of an empty function which is only there for BC compatibility.
+        self::expectNotToPerformAssertions();
         $this->listener->prePersist(new LifecycleEventArgs(new \stdClass(), $this->em->reveal()));
     }
 
@@ -205,7 +210,7 @@ class EntityChangedListenerTest extends TestCase
      * @param  mixed $entity
      * @return array[]
      */
-    private function genericEntityDataProvider($entity)
+    private function genericEntityDataProvider($entity): array
     {
         return [
             get_class($entity) => [$entity],
