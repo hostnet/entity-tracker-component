@@ -34,7 +34,7 @@ class Toolbox
      * @ORM\OneToMany(
      *     targetEntity="Tool",
      *     mappedBy="toolbox",
-     *     cascade="persist",
+     *     cascade={"persist"},
      *     orphanRemoval=true
      * )
      * @var Tool[]
