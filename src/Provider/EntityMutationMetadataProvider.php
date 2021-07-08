@@ -62,7 +62,10 @@ class EntityMutationMetadataProvider
         foreach ($fields as $field) {
             if (isset($data[$field])) {
                 $metadata->setFieldValue($original, $field, $data[$field]);
-            } elseif (isset($id_data[$field]) && $metadata->isIdentifier($field) && $metadata->isIdGeneratorIdentity()) {
+            } elseif (isset($id_data[$field])
+                && $metadata->isIdentifier($field)
+                && $metadata->isIdGeneratorIdentity()
+            ) {
                 $metadata->setFieldValue($original, $field, $id_data[$field]);
             } elseif ($metadata->isAssociationInverseSide($field)) {
                 $metadata->setFieldValue($original, $field, $metadata->getFieldValue($entity, $field));
@@ -258,17 +261,21 @@ class EntityMutationMetadataProvider
             }
 
             if ($val instanceof PersistentCollection) {
-                $unwrappedValue = $val->unwrap();
+                $unwrapped_value = $val->unwrap();
             } elseif ($val instanceof Collection) {
-                $unwrappedValue = $val;
+                $unwrapped_value = $val;
             } else {
-                $unwrappedValue = [$val];
+                $unwrapped_value = [$val];
             }
 
             $target_class = $em->getClassMetadata($assoc['targetEntity']);
 
-            foreach ($unwrappedValue as $key => $entry) {
-                if (UnitOfWork::STATE_NEW !== $em->getUnitOfWork()->getEntityState($entry, UnitOfWork::STATE_NEW)) {
+            foreach ($unwrapped_value as $key => $entry) {
+                if (UnitOfWork::STATE_NEW !== $em->getUnitOfWork()->getEntityState(
+                    $entry,
+                    UnitOfWork::STATE_NEW
+                )
+                ) {
                     continue;
                 }
 
