@@ -38,7 +38,7 @@ class Author
      * @ORM\ManyToMany(
      *     targetEntity="Book",
      *     mappedBy="authors",
-     *     cascade="persist"
+     *     cascade={"persist"}
      * )
      * @var Book[]
      */
