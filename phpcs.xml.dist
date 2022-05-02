@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<ruleset name="entity-tracker-component PHPCS">
+  <rule ref="Hostnet-Level-1"/>
+</ruleset>
