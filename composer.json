@@ -26,5 +26,11 @@
         "psr-4": {
             "Hostnet\\Component\\EntityTracker\\": "test/"
         }
+    },
+    "config": {
+        "allow-plugins": {
+            "hostnet/*":                                      true,
+            "dealerdirect/phpcodesniffer-composer-installer": false
+        }
     }
 }
