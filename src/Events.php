@@ -20,5 +20,5 @@ final class Events
      *
      * @var string
      */
-    const ENTITY_CHANGED = 'entityChanged';
+    public const ENTITY_CHANGED = 'entityChanged';
 }

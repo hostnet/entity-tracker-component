@@ -8,8 +8,6 @@ namespace Hostnet\Component\EntityTracker\Provider;
 
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\UnitOfWork;
 use Hostnet\Component\EntityTracker\Annotation\Tracked;
 
 class EntityAnnotationMetadataProvider

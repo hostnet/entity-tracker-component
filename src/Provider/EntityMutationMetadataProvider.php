@@ -135,7 +135,7 @@ class EntityMutationMetadataProvider
     }
 
     /**
-     * @param ClassMetaData $association_meta
+     * @param ClassMetadata $association_meta
      * @param string        $left
      * @param string        $right
      * @return bool

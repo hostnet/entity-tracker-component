@@ -12,7 +12,7 @@
     },
     "require-dev": {
         "hostnet/database-test-lib": "^2.0.2",
-        "hostnet/phpcs-tool":        "^8.3",
+        "hostnet/phpcs-tool":        "^9.1.0",
         "phpspec/prophecy-phpunit":  "^2.0",
         "phpunit/phpunit":           "^9.4",
         "symfony/cache":             "^5.3"
