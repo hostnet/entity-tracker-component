@@ -94,7 +94,7 @@ class EntityMutationMetadataProviderTest extends TestCase
 
         self::assertEquals([
             Gallery::class => [$gallery],
-            Visitor::class => [$v1, $v2],
+            Visitor::class => [$v2, $v1],
         ], $this->provider->getFullChangeSet($this->em));
     }
 
