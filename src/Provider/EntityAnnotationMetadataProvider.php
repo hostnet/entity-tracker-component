@@ -51,6 +51,8 @@ class EntityAnnotationMetadataProvider
      * @param EntityManagerInterface $em
      * @param mixed                  $entity
      * @param string                 $annotation
+     *
+     * @deprecated Please use the Tracked attribute instead
      */
     public function getAnnotationFromEntity(EntityManagerInterface $em, $entity, $annotation): mixed
     {
