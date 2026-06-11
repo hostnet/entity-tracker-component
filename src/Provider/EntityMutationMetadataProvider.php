@@ -19,22 +19,15 @@ use Psr\Log\NullLogger;
 class EntityMutationMetadataProvider
 {
     /**
-     * @var Reader
-     */
-    private $reader;
-
-    /**
      * @var LoggerInterface
      */
     private $logger;
 
     /**
-     * @param Reader          $reader
      * @param LoggerInterface $logger
      */
-    public function __construct(Reader $reader, LoggerInterface $logger = null)
+    public function __construct(Reader $unused, LoggerInterface $logger = null)
     {
-        $this->reader = $reader;
         $this->logger = $logger ?: new NullLogger();
     }
 
@@ -44,9 +37,8 @@ class EntityMutationMetadataProvider
      *
      * @param EntityManagerInterface $em
      * @param mixed                  $entity
-     * @return object
      */
-    public function createOriginalEntity(EntityManagerInterface $em, $entity)
+    public function createOriginalEntity(EntityManagerInterface $em, $entity): object
     {
         $uow      = $em->getUnitOfWork();
         $id_data  = $uow->isInIdentityMap($entity) ? $uow->getEntityIdentifier($entity) : [];
@@ -84,7 +76,7 @@ class EntityMutationMetadataProvider
      * @return string[]
      * @throws \InvalidArgumentException
      */
-    public function getMutatedFields(EntityManagerInterface $em, $entity, $original)
+    public function getMutatedFields(EntityManagerInterface $em, $entity, $original): array
     {
         $mutation_data = [];
         /** @var \Doctrine\ORM\Mapping\ClassMetadata $metadata */
@@ -138,9 +130,8 @@ class EntityMutationMetadataProvider
      * @param ClassMetadata $association_meta
      * @param string        $left
      * @param string        $right
-     * @return bool
      */
-    private function hasAssociationChanged(ClassMetadata $association_meta, $left, $right)
+    private function hasAssociationChanged(ClassMetadata $association_meta, $left, $right): bool
     {
         // check if the PK of the related entity has changed (thus different link)
         if (null !== $left && null !== $right) {
@@ -179,18 +170,16 @@ class EntityMutationMetadataProvider
     /**
      * @param EntityManagerInterface $em
      * @param mixed                  $entity
-     * @return bool
      */
-    public function isEntityManaged(EntityManagerInterface $em, $entity)
+    public function isEntityManaged(EntityManagerInterface $em, $entity): bool
     {
         return $em->getUnitOfWork()->getEntityState($entity) === UnitOfWork::STATE_MANAGED;
     }
 
     /**
      * @param EntityManagerInterface $em
-     * @return array
      */
-    public function getFullChangeSet(EntityManagerInterface $em)
+    public function getFullChangeSet(EntityManagerInterface $em): array
     {
         $change_set = [];
 
@@ -228,7 +217,7 @@ class EntityMutationMetadataProvider
         ClassMetadata $metadata,
         $entity,
         array &$change_set
-    ) {
+    ): void {
         if (!isset($change_set[$metadata->rootEntityName])) {
             $change_set[$metadata->rootEntityName] = [];
         }
@@ -252,7 +241,7 @@ class EntityMutationMetadataProvider
         ClassMetadata $metadata,
         $entity,
         array &$change_set
-    ) {
+    ): void {
         // does the entity have any associations?
         // Look for changes in associations of the entity
         foreach ($metadata->associationMappings as $field => $assoc) {

@@ -9,6 +9,7 @@ namespace Hostnet\Component\EntityTracker\Listener;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Proxy\Proxy;
+use Hostnet\Component\EntityTracker\Attributes\Tracked;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Events;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
@@ -17,7 +18,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * Listener for entities that use the Tracked Annotation.
+ * Listener for entities that use the Tracked Annotation or attribute.
  *
  * This listener will fire an "Events::ENTITY_CHANGED" event
  * per entity that is changed.
@@ -35,14 +36,14 @@ class EntityChangedListener
     private $meta_mutation_provider;
 
     /**
-     * @var string[]
-     */
-    private $annotations = [];
-
-    /**
      * @var LoggerInterface
      */
     private $logger;
+
+    /**
+     * Caches the class names to prevent iterating over attribute and annotations again on the next flush.
+     */
+    private array $is_tracked_cache = [];
 
     /**
      * @param EntityAnnotationMetadataProvider $meta_annotation_provider
@@ -59,18 +60,50 @@ class EntityChangedListener
         $this->logger                   = $logger ? : new NullLogger();
     }
 
+    private function hasTrackedAttribute($entity): bool
+    {
+        $reflection = new \ReflectionClass($entity);
+        $attributes = $reflection->getAttributes(Tracked::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        return !empty($attributes);
+    }
+
+    private function isTracked($em, $entity): bool
+    {
+        $class = get_class($entity);
+        if (array_key_exists($class, $this->is_tracked_cache)) {
+            return $this->is_tracked_cache[$class];
+        }
+
+        $has_tracked_attribute = $this->hasTrackedAttribute($entity);
+        if ($has_tracked_attribute) {
+            $this->is_tracked_cache[$class] = true;
+
+            return true;
+        }
+
+        $has_tracked_annotation = $this->meta_annotation_provider->isTracked($em, $entity);
+        if ($has_tracked_annotation) {
+            $this->is_tracked_cache[$class] = true;
+
+            return true;
+        }
+
+        $this->is_tracked_cache[$class] = false;
+
+        return false;
+    }
+
     /**
      * Pre Flush event callback
      *
      * Checks if the entity contains an @Tracked (or derived)
-     * annotation. If so, it will attempt to calculate changes
+     * annotation or attribute. If so, it will attempt to calculate changes
      * made and dispatch 'Events::ENTITY_CHANGED' with the current
      * and original entity states. Note that the original entity
      * is not managed.
-     *
-     * @param PreFlushEventArgs $event
      */
-    public function preFlush(PreFlushEventArgs $event)
+    public function preFlush(PreFlushEventArgs $event): void
     {
         $em      = $event->getEntityManager();
         $changes = $this->meta_mutation_provider->getFullChangeSet($em);
@@ -80,7 +113,8 @@ class EntityChangedListener
                 continue;
             }
 
-            if (false === $this->meta_annotation_provider->isTracked($em, current($updates))) {
+            $entity = current($updates);
+            if (!$this->isTracked($em, $entity)) {
                 continue;
             }
 
@@ -111,18 +145,9 @@ class EntityChangedListener
     }
 
     /**
-     * Pre Persist event callback
-     *
-     * Checks if the entity contains an @Tracked (or derived)
-     * annotation. If so, it will dispatch 'Events::ENTITY_CHANGED'
-     * with the new entity states.
-     *
-     * @deprecated Will be removed. Here so the bundle does not break.
-     *
-     * @param LifecycleEventArgs $event
+     * @deprecated Will be removed when removing doctrine/annotations, will break entity-tracker-bundle otherwise.
      */
-    public function prePersist(LifecycleEventArgs $event)
+    public function prePersist(LifecycleEventArgs $event): void
     {
-        // do nothing, will be removed later on.
     }
 }

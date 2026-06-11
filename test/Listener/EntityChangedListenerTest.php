@@ -13,6 +13,7 @@ use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Proxy\Proxy;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Events;
+use Hostnet\Component\EntityTracker\Mocked\TrackedAttributeEntity;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
 use PHPUnit\Framework\TestCase;
@@ -141,7 +142,7 @@ class EntityChangedListenerTest extends TestCase
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
-    public function testPreFlushWithNewEntity(): void
+    public function testPreFlushWithNewAnnotatedEntity(): void
     {
         $entity = new \stdClass();
 
@@ -157,6 +158,45 @@ class EntityChangedListenerTest extends TestCase
             ->dispatchEvent(Events::ENTITY_CHANGED, Argument::type(EntityChangedEvent::class))
             ->shouldBeCalledTimes(1);
 
+        $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
+    }
+
+    public function testPreFlushWithNewAttributedEntity(): void
+    {
+        $entity = new TrackedAttributeEntity();
+
+        $this->meta_mutation_provider
+            ->getFullChangeSet($this->em->reveal())
+            ->willReturn($this->genericEntityDataProvider($entity));
+        $this->meta_annotation_provider->isTracked(Argument::cetera())->shouldNotBeCalled();
+        $this->logger->debug(Argument::cetera())->shouldBeCalled();
+        $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity)->willReturn(true);
+        $this->meta_mutation_provider->createOriginalEntity($this->em->reveal(), $entity)->willReturn(null);
+        $this->meta_mutation_provider->getMutatedFields($this->em->reveal(), $entity, null)->willReturn(['id']);
+        $this->event_manager
+            ->dispatchEvent(Events::ENTITY_CHANGED, Argument::type(EntityChangedEvent::class))
+            ->shouldBeCalledTimes(1);
+
+        $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
+    }
+
+    public function testPreFlushWithNewEntityCached(): void
+    {
+        $entity           = new \stdClass();
+        $entity_2nd_flush = new \stdClass();
+
+        $this->meta_mutation_provider
+            ->getFullChangeSet($this->em->reveal())
+            ->willReturn(
+                $this->genericEntityDataProvider($entity),
+                $this->genericEntityDataProvider($entity_2nd_flush)
+            );
+
+        $this->meta_annotation_provider->isTracked(Argument::cetera())->willReturn(false);
+        $this->event_manager
+            ->dispatchEvent(Argument::cetera())->shouldNotBeCalled();
+
+        $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 

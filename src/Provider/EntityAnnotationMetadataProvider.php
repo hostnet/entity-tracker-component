@@ -10,6 +10,9 @@ use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\EntityManagerInterface;
 use Hostnet\Component\EntityTracker\Annotation\Tracked;
 
+/**
+ * @deprecated Please use the Tracked and related attributes instead
+ */
 class EntityAnnotationMetadataProvider
 {
     /**
@@ -26,13 +29,11 @@ class EntityAnnotationMetadataProvider
     }
 
     /**
-     * Get the annotation from a class or null if it doesn't exists.
-     *
-     * @param EntityManagerInterface $em
      * @param mixed                  $entity
-     * @return bool
+     *
+     * @deprecated Please use the Tracked attribute instead
      */
-    public function isTracked(EntityManagerInterface $em, $entity)
+    public function isTracked(EntityManagerInterface $em, $entity): bool
     {
         $class       = get_class($entity);
         $annotations = $this->reader->getClassAnnotations($em->getClassMetadata($class)->getReflectionClass());
@@ -50,9 +51,8 @@ class EntityAnnotationMetadataProvider
      * @param EntityManagerInterface $em
      * @param mixed                  $entity
      * @param string                 $annotation
-     * @return mixed
      */
-    public function getAnnotationFromEntity(EntityManagerInterface $em, $entity, $annotation)
+    public function getAnnotationFromEntity(EntityManagerInterface $em, $entity, $annotation): mixed
     {
         return $this->reader->getClassAnnotation(
             $em->getClassMetadata(get_class($entity))->getReflectionClass(),
