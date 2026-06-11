@@ -38,7 +38,7 @@ class EntityMutationMetadataProvider
      * @param EntityManagerInterface $em
      * @param mixed                  $entity
      */
-    public function createOriginalEntity(EntityManagerInterface $em, $entity): object
+    public function createOriginalEntity(EntityManagerInterface $em, $entity): mixed
     {
         $uow      = $em->getUnitOfWork();
         $id_data  = $uow->isInIdentityMap($entity) ? $uow->getEntityIdentifier($entity) : [];
