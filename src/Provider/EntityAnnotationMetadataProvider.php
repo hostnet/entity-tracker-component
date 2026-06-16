@@ -8,11 +8,10 @@ namespace Hostnet\Component\EntityTracker\Provider;
 
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\EntityManagerInterface;
-use Hostnet\Component\EntityTracker\Annotation\Tracked;
+use Doctrine\Persistence\Proxy;
+use Hostnet\Component\EntityTracker\Annotation\Tracked as TrackedAnnotation;
+use Hostnet\Component\EntityTracker\Attributes\Tracked as Tracked;
 
-/**
- * @deprecated Please use the Tracked and related attributes instead
- */
 class EntityAnnotationMetadataProvider
 {
     /**
@@ -39,7 +38,7 @@ class EntityAnnotationMetadataProvider
         $annotations = $this->reader->getClassAnnotations($em->getClassMetadata($class)->getReflectionClass());
 
         foreach ($annotations as $annotation) {
-            if ($annotation instanceof Tracked) {
+            if ($annotation instanceof TrackedAnnotation) {
                 return true;
             }
         }
@@ -60,5 +59,25 @@ class EntityAnnotationMetadataProvider
             $em->getClassMetadata(get_class($entity))->getReflectionClass(),
             $annotation
         );
+    }
+
+    public function getAttributeFromEntity(string $attribute_class, EntityManagerInterface $em, mixed $entity): ?Tracked
+    {
+        $class = get_class($entity);
+        if ($entity instanceof Proxy) {
+            $class = $em->getClassMetadata($class)->getName();
+        }
+
+        $reflection = new \ReflectionClass($class);
+        $attributes = $reflection->getAttributes($attribute_class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (empty($attributes)) {
+            return null;
+        }
+
+        /** @var Tracked $attribute */
+        $attribute = $attributes[0]->newInstance();
+
+        return $attribute;
     }
 }

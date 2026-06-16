@@ -11,9 +11,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Proxy\Proxy;
+use Hostnet\Component\EntityTracker\Attributes\Tracked;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Events;
-use Hostnet\Component\EntityTracker\Mocked\TrackedAttributeEntity;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
 use PHPUnit\Framework\TestCase;
@@ -70,6 +70,9 @@ class EntityChangedListenerTest extends TestCase
             ->dispatchEvent(Events::ENTITY_CHANGED, Argument::type(EntityChangedEvent::class))
             ->shouldNotBeCalled();
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity)->willReturn(false);
+        $this->meta_annotation_provider
+            ->getAttributeFromEntity(Argument::any(), $this->em->reveal(), $entity)
+            ->willReturn(null);
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
 
@@ -90,6 +93,9 @@ class EntityChangedListenerTest extends TestCase
             ->getFullChangeSet($this->em->reveal())
             ->willReturn($this->genericEntityDataProvider($entity));
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity)->willReturn(true);
+        $this->meta_annotation_provider
+            ->getAttributeFromEntity(Argument::any(), $this->em->reveal(), $entity)
+            ->willReturn(null);
         $this->logger->debug(Argument::cetera())->shouldBeCalled();
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity)->willReturn(true);
         $this->meta_mutation_provider->createOriginalEntity($this->em->reveal(), $entity)->willReturn(null);
@@ -113,6 +119,9 @@ class EntityChangedListenerTest extends TestCase
             ->dispatchEvent(Events::ENTITY_CHANGED, Argument::type(EntityChangedEvent::class))
             ->shouldNotBeCalled();
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity)->willReturn(true);
+        $this->meta_annotation_provider
+            ->getAttributeFromEntity(Argument::any(), $this->em->reveal(), $entity)
+            ->willReturn(null);
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity)->willReturn(true);
         $this->meta_mutation_provider->createOriginalEntity($this->em->reveal(), $entity)->willReturn($original);
         $this->meta_mutation_provider->getMutatedFields($this->em->reveal(), $entity, $entity)->willReturn([]);
@@ -131,6 +140,9 @@ class EntityChangedListenerTest extends TestCase
             ->getFullChangeSet($this->em->reveal())
             ->willReturn($this->genericEntityDataProvider($entity));
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity)->willReturn(true);
+        $this->meta_annotation_provider
+            ->getAttributeFromEntity(Argument::any(), $this->em->reveal(), $entity)
+            ->willReturn(null);
         $this->logger->debug(Argument::cetera())->shouldBeCalled();
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity)->willReturn(true);
         $this->meta_mutation_provider->createOriginalEntity($this->em->reveal(), $entity)->willReturn($original);
@@ -150,6 +162,9 @@ class EntityChangedListenerTest extends TestCase
             ->getFullChangeSet($this->em->reveal())
             ->willReturn($this->genericEntityDataProvider($entity));
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity)->willReturn(true);
+        $this->meta_annotation_provider
+            ->getAttributeFromEntity(Argument::any(), $this->em->reveal(), $entity)
+            ->willReturn(null);
         $this->logger->debug(Argument::cetera())->shouldBeCalled();
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity)->willReturn(true);
         $this->meta_mutation_provider->createOriginalEntity($this->em->reveal(), $entity)->willReturn(null);
@@ -163,11 +178,14 @@ class EntityChangedListenerTest extends TestCase
 
     public function testPreFlushWithNewAttributedEntity(): void
     {
-        $entity = new TrackedAttributeEntity();
+        $entity = new \stdClass();
 
         $this->meta_mutation_provider
             ->getFullChangeSet($this->em->reveal())
             ->willReturn($this->genericEntityDataProvider($entity));
+        $this->meta_annotation_provider
+            ->getAttributeFromEntity(Tracked::class, $this->em->reveal(), $entity)
+            ->willReturn(new Tracked())->shouldBeCalled();
         $this->meta_annotation_provider->isTracked(Argument::cetera())->shouldNotBeCalled();
         $this->logger->debug(Argument::cetera())->shouldBeCalled();
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity)->willReturn(true);
@@ -191,10 +209,15 @@ class EntityChangedListenerTest extends TestCase
                 $this->genericEntityDataProvider($entity),
                 $this->genericEntityDataProvider($entity_2nd_flush)
             );
-
-        $this->meta_annotation_provider->isTracked(Argument::cetera())->willReturn(false);
+        $this->meta_mutation_provider->getMutatedFields($this->em->reveal(), $entity, null)->willReturn(['id']);
+        $this->meta_mutation_provider->createOriginalEntity($this->em->reveal(), $entity)->willReturn(null);
+        $this->meta_annotation_provider->isTracked(Argument::cetera())->shouldNotBeCalled();
+        $this->meta_annotation_provider
+            ->getAttributeFromEntity(Tracked::class, $this->em->reveal(), $entity)
+            ->willReturn(new Tracked())->shouldBeCalledTimes(1);
         $this->event_manager
-            ->dispatchEvent(Argument::cetera())->shouldNotBeCalled();
+            ->dispatchEvent(Events::ENTITY_CHANGED, Argument::type(EntityChangedEvent::class))
+            ->shouldBeCalledTimes(2);
 
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
@@ -210,6 +233,9 @@ class EntityChangedListenerTest extends TestCase
             ->dispatchEvent(Events::ENTITY_CHANGED, Argument::type(EntityChangedEvent::class))
             ->shouldNotBeCalled();
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity)->willReturn(true);
+        $this->meta_annotation_provider
+            ->getAttributeFromEntity(Argument::any(), $this->em->reveal(), $entity)
+            ->willReturn(null);
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity)->willReturn(true);
         $this->listener->preFlush(new PreFlushEventArgs($this->em->reveal()));
     }
@@ -224,6 +250,9 @@ class EntityChangedListenerTest extends TestCase
             ->getFullChangeSet($this->em->reveal())
             ->willReturn($this->genericEntityDataProvider($entity->reveal()));
         $this->meta_annotation_provider->isTracked($this->em->reveal(), $entity->reveal())->willReturn(true);
+        $this->meta_annotation_provider
+            ->getAttributeFromEntity(Argument::any(), $this->em->reveal(), $entity)
+            ->willReturn(null);
         $this->meta_mutation_provider->isEntityManaged($this->em->reveal(), $entity->reveal())->willReturn(true);
         $entity->__isInitialized()->willReturn(true);
         $this->logger->debug(Argument::cetera())->shouldBeCalled();
