@@ -13,7 +13,7 @@ use Doctrine\Persistence\ObjectManager;
 use Hostnet\Component\EntityTracker\Attributes\Tracked;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Events;
-use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+use Hostnet\Component\EntityTracker\Provider\EntityMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -30,7 +30,7 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 class EntityChangedListener
 {
     public function __construct(
-        private EntityAnnotationMetadataProvider $meta_annotation_provider,
+        private EntityMetadataProvider $meta_annotation_provider,
         private EntityMutationMetadataProvider $meta_mutation_provider,
         private ?LoggerInterface $logger = null,
         private CacheItemPoolInterface $is_tracked_cache = new ArrayAdapter()

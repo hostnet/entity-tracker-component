@@ -20,7 +20,7 @@ use Hostnet\Component\EntityTracker\Functional\Entity\Book;
 use Hostnet\Component\EntityTracker\Functional\Entity\Tool;
 use Hostnet\Component\EntityTracker\Functional\Entity\Toolbox;
 use Hostnet\Component\EntityTracker\Listener\EntityChangedListener;
-use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+use Hostnet\Component\EntityTracker\Provider\EntityMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -64,7 +64,7 @@ class EventListenerTest extends TestCase
 
         // setup required providers
         $mutation_metadata_provider   = new EntityMutationMetadataProvider($annotation_reader);
-        $annotation_metadata_provider = new EntityAnnotationMetadataProvider($annotation_reader);
+        $annotation_metadata_provider = new EntityMetadataProvider($annotation_reader);
 
         // pre flush event listener that uses the @Tracked annotation
         $entity_changed_listener = new EntityChangedListener(

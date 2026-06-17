@@ -18,9 +18,9 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
- * @covers \Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider
+ * @covers \Hostnet\Component\EntityTracker\Provider\EntityMetadataProvider
  */
-class EntityAnnotationMetadataProviderTest extends TestCase
+class EntityMetadataProviderTest extends TestCase
 {
     use ProphecyTrait;
 
@@ -31,7 +31,7 @@ class EntityAnnotationMetadataProviderTest extends TestCase
     public function setUp(): void
     {
         $this->reader   = new AnnotationReader();
-        $this->provider = new EntityAnnotationMetadataProvider($this->reader);
+        $this->provider = new EntityMetadataProvider($this->reader);
         $this->em       = $this->createMock('Doctrine\ORM\EntityManagerInterface');
     }
 

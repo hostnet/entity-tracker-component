@@ -14,7 +14,7 @@ use Doctrine\ORM\Proxy\Proxy;
 use Hostnet\Component\EntityTracker\Attributes\Tracked;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Events;
-use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+use Hostnet\Component\EntityTracker\Provider\EntityMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -44,7 +44,7 @@ class EntityChangedListenerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->meta_annotation_provider = $this->prophesize(EntityAnnotationMetadataProvider::class);
+        $this->meta_annotation_provider = $this->prophesize(EntityMetadataProvider::class);
         $this->meta_mutation_provider   = $this->prophesize(EntityMutationMetadataProvider::class);
         $this->em                       = $this->prophesize(EntityManagerInterface::class);
         $this->event                    = $this->prophesize(PreFlushEventArgs::class);
