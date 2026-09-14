@@ -8,37 +8,24 @@ namespace Hostnet\Component\EntityTracker\Functional\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Hostnet\Component\EntityTracker\Annotation\Tracked;
+use Hostnet\Component\EntityTracker\Attributes\Tracked;
 
-/**
- * @ORM\Entity
- * @Tracked
- */
+#[ORM\Entity]
+#[Tracked]
 class Toolbox
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @var int
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     public $id;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     * @var string
-     */
+    #[ORM\Column(type: 'string', nullable: true)]
     public $tag;
 
     /**
-     * @ORM\OneToMany(
-     *     targetEntity="Tool",
-     *     mappedBy="toolbox",
-     *     cascade={"persist"},
-     *     orphanRemoval=true
-     * )
      * @var Tool[]
      */
+    #[ORM\OneToMany(targetEntity: 'Tool', mappedBy: 'toolbox', cascade: ['persist'], orphanRemoval: true)]
     public $tools;
 
     /**

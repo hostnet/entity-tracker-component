@@ -10,31 +10,25 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- */
+#[ORM\Entity]
 class Gallery
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     private $address;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Visitor", cascade={"persist"})
-     * @ORM\JoinTable(
-     *     joinColumns={@ORM\JoinColumn(name="contract_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="visitor_id", referencedColumnName="id")}
-     * )
      * @var Collection
      */
+    #[ORM\ManyToMany(targetEntity: 'Visitor', cascade: ['persist'])]
+    #[ORM\JoinTable(
+        joinColumns: [new ORM\JoinColumn(name: 'contract_id', referencedColumnName: 'id')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'visitor_id', referencedColumnName: 'id')]
+    )]
     private $visitors;
 
     /**

@@ -6,63 +6,20 @@ declare(strict_types=1);
 
 namespace Hostnet\Component\EntityTracker\Provider;
 
-use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Proxy;
-use Hostnet\Component\EntityTracker\Annotation\Tracked as TrackedAnnotation;
-use Hostnet\Component\EntityTracker\Attributes\Tracked as Tracked;
+use Hostnet\Component\EntityTracker\Attributes\Tracked;
 
 class EntityMetadataProvider
 {
     /**
-     * @var Reader
+     * @param class-string<Tracked> $attribute_class
      */
-    private $reader;
-
-    /**
-     * @param Reader $reader
-     */
-    public function __construct(Reader $reader)
-    {
-        $this->reader = $reader;
-    }
-
-    /**
-     * @param mixed                  $entity
-     *
-     * @deprecated Please use the Tracked attribute instead
-     */
-    public function isTracked(EntityManagerInterface $em, $entity): bool
-    {
-        $class       = get_class($entity);
-        $annotations = $this->reader->getClassAnnotations($em->getClassMetadata($class)->getReflectionClass());
-
-        foreach ($annotations as $annotation) {
-            if ($annotation instanceof TrackedAnnotation) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param EntityManagerInterface $em
-     * @param mixed                  $entity
-     * @param string                 $annotation
-     *
-     * @deprecated Please use the Tracked attribute instead
-     */
-    public function getAnnotationFromEntity(EntityManagerInterface $em, $entity, $annotation): mixed
-    {
-        return $this->reader->getClassAnnotation(
-            $em->getClassMetadata(get_class($entity))->getReflectionClass(),
-            $annotation
-        );
-    }
-
-    public function getAttributeFromEntity(string $attribute_class, EntityManagerInterface $em, mixed $entity): ?Tracked
-    {
+    public function getAttributeFromEntity(
+        string $attribute_class,
+        EntityManagerInterface $em,
+        object $entity
+    ): ?Tracked {
         $class = get_class($entity);
         if ($entity instanceof Proxy) {
             $class = $em->getClassMetadata($class)->getName();

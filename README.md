@@ -11,24 +11,24 @@ README
      - [Registering the Events](#registering-the-events)
      - [Creating the Listener](#creating-the-listener)
      - [Creating an Interface for the Entity](#creating-an-interface-for-the-entity)
-     - [Registering the Annotation on the Entity](#registering-the-annotation-on-the-entity)
+     - [Registering the Attribute on the Entity](#registering-the-attribute-on-the-entity)
      - [What's Next?](#whats-next)
-   - [Extending the Tracker Annotation](#extending-the-tracker-annotation)
-     - [Example Annotation](#example-annotation)
-     - [Custom Annotation Resolvers](#custom-annotation-resolvers)
+   - [Extending the Tracker Attribute](#extending-the-tracker-attribute)
+     - [Example Attribute](#example-attribute)
+     - [Custom Attribute Resolvers](#custom-attribute-resolvers)
      - [Custom entityChanged Listener](#custom-entitychanged-listener)
 
 What is the Entity Tracker?
 ---------------------------
 The Entity Tracker Component is a library used to track changes within an Entity during a flush of the EntityManager. This makes it possible to do all sorts of things you want to automated during the `preFlush` event.
 
-Entities become tracked when you implement the `@Tracked` annotation or a sub-class of `@Tracked`. You have total control over what happens next and which events you will use to listen to the `entityChanged` event.
+Entities become tracked when you implement the `#[Tracked]` attribute or a sub-class of `Tracked`. You have total control over what happens next and which events you will use to listen to the `entityChanged` event.
 
 Let's say that every time you flush your User, you want to set when it was updated. By default, you would have to call `$user->setUpdatedAt()` manually or create a custom listener on preFlush that sets the updated at timestamp. Both are a lot of extra work and you have to write extra code to determine changes. Listening to preFlush will always trigger your listener and you don't want to make a huge if statement nor create a listener for each Entity.
 
 Requirements
 ------------
-The tracker component requires at least php 5.4 and runs on Doctrine2. For specific requirements, please check [composer.json](../master/composer.json)
+The tracker component requires at least PHP 8.3 and runs on Doctrine2. For specific requirements, please check [composer.json](../master/composer.json)
 
 Installation
 ------------
@@ -52,7 +52,7 @@ Documentation
 How does it work?
 -----------------
 
-It works by putting an annotation on your Entity and registering your listener on our event, assuming you have already registered our event to doctrine. That's all you need to do to start tracking the Entity so it will be available in the `entityChanged` event.
+It works by putting an attribute on your Entity and registering your listener on our event, assuming you have already registered our event to doctrine. That's all you need to do to start tracking the Entity so it will be available in the `entityChanged` event.
 
 Setup
 -----
@@ -67,23 +67,20 @@ Here's an example of a very basic setup. Setting this up will be a lot easier if
 
 use Acme\Component\Listener\ChangedAtListener;
 use Hostnet\Component\EntityTracker\Listener\EntityChangedListener;
-use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+use Hostnet\Component\EntityTracker\Provider\EntityMetadataProvider;
 use Hostnet\Component\EntityTracker\Provider\EntityMutationMetadataProvider;
 
 /* @var $em \Doctrine\ORM\EntityManager */
 $event_manager = $em->getEventManager();
 
-// default doctrine annotation reader
-$annotation_reader = new AnnotationReader();
-
 // setup required providers
-$mutation_metadata_provider   = new EntityMutationMetadataProvider($annotation_reader);
-$annotation_metadata_provider = new EntityAnnotationMetadataProvider($annotation_reader);
+$meta_provider               = new EntityMetadataProvider();
+$mutation_metadata_provider  = new EntityMutationMetadataProvider();
 
-// pre flush event listener that uses the @Tracked annotation
+// pre flush event listener that uses the Tracked attribute
 $entity_changed_listener = new EntityChangedListener(
-    $mutation_metadata_provider,
-    $annotation_metadata_provider
+    $meta_provider,
+    $mutation_metadata_provider
 );
 
 // our example listener
@@ -91,7 +88,6 @@ $listener = new ChangedAtListener(new DateTime());
 
 // register the events
 $event_manager->addEventListener('preFlush', $entity_changed_listener);
-$event_manager->addEventListener('prePersist', $entity_changed_listener);
 $event_manager->addEventListener('entityChanged', $listener);
 
 ```
@@ -131,7 +127,7 @@ class ChangedAtListener
 ```
 
 #### Creating an Interface for the Entity
-Additionally to the `@Tracked` annotation, we want to determine if we can set and updated_at field within our Entity. This can be done by creating the following interface for our Entity.
+Additionally to the `#[Tracked]` attribute, we want to determine if we can set and updated_at field within our Entity. This can be done by creating the following interface for our Entity.
 
 ```php
 
@@ -145,24 +141,20 @@ interface UpdatableInterface
 
 ```
 
-#### Registering the Annotation on the Entity
-All we have to do now is put the `@Tracked` annotation and Interface on our Entity and implement the required method
+#### Registering the Attribute on the Entity
+All we have to do now is put the `#[Tracked]` attribute and Interface on our Entity and implement the required method
 
 ```php
 
 use Acme\Component\Listener\UpdatableInterface;
 use Doctrine\ORM\Mapping as ORM;
-use Hostnet\Component\EntityTracker\Annotation\Tracked;
+use Hostnet\Component\EntityTracker\Attributes\Tracked;
 
-/**
- * @ORM\Entity
- * @Tracked
- */
+#[ORM\Entity]
+#[Tracked]
 class MyEntity implements UpdatableInterface
 {
-    /**
-     * @ORM\...
-     */
+    #[ORM\Column]
     private $changed_at;
 
     public function setUpdatedAt(\DateTime $now)
@@ -184,25 +176,21 @@ $em->flush();
 
 ```
 
-### Extending the Tracker Annotation
-You might want to extend the `@Tracker` annotation. This allows you to add options and additional checks within your listener.
+### Extending the Tracker Attribute
+You might want to extend the `Tracked` attribute. This allows you to add options and additional checks within your listener.
 
-#### Example Annotation
-In the following example, you will see how using a creating a custom annotation works.
- - You have to add `@Annotation`
- - You have to add `@Target({"CLASS"})`
- - It has to extend `Hostnet\Component\EntityTracker\Annotation\Tracked`
+#### Example Attribute
+In the following example, you will see how creating a custom attribute works.
+ - You have to add `#[\Attribute(\Attribute::TARGET_CLASS)]`
+ - It has to extend `Hostnet\Component\EntityTracker\Attributes\Tracked`
 
-Using this annotation will give us specific access to options within our listener. We can now attempt to get this annotation in the listener and we get can call `getIgnoredFields()`. This example will ignore certain fields for entities using the annotation.
+Using this attribute will give us specific access to options within our listener. We can now attempt to get this attribute in the listener and we get can call `getIgnoredFields()`. This example will ignore certain fields for entities using the attribute.
 
 ```php
 
-use Hostnet\Component\EntityTracker\Annotation\Tracked;
+use Hostnet\Component\EntityTracker\Attributes\Tracked;
 
-/**
- * @Annotation
- * @Target({"CLASS"})
- */
+#[\Attribute(\Attribute::TARGET_CLASS)]
 class Changed extends Tracked
 {
     public $ignore_fields = [];
@@ -213,34 +201,34 @@ class Changed extends Tracked
             return ['id'];
         }
 
-        return $ignore_fields;
+        return $this->ignore_fields;
     }
 }
 
 ```
 
-#### Custom Annotation Resolvers
-To obtain the Annotation, we have implemented resolvers. The example below shows how you could implement it yourself.
+#### Custom Attribute Resolvers
+To obtain the attribute, we have implemented resolvers. The example below shows how you could implement it yourself.
 
 ```php
 
 use Doctrine\ORM\EntityManagerInterface;
-use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+use Hostnet\Component\EntityTracker\Provider\EntityMetadataProvider;
 
 class ChangedResolver
 {
-    private $annotation = 'Changed';
+    private $attribute_class = Changed::class;
 
     private $provider;
 
-    public function __construct(EntityAnnotationMetadataProvider $provider)
+    public function __construct(EntityMetadataProvider $provider)
     {
         $this->provider = $provider;
     }
 
-    public function getChangedAnnotation(EntityManagerInterface $em, $entity)
+    public function getChangedAttribute(EntityManagerInterface $em, $entity)
     {
-        return $this->provider->getAnnotationFromEntity($em, $entity, $this->annotation);
+        return $this->provider->getAttributeFromEntity($this->attribute_class, $em, $entity);
     }
 }
 
@@ -248,7 +236,7 @@ class ChangedResolver
 
 
 #### Custom entityChanged Listener
-The listener can now use the resolver to obtain the annotation so possible do something extra when a specific set of fields is changed.
+The listener can now use the resolver to obtain the attribute so possible do something extra when a specific set of fields is changed.
 
 ```php
 
@@ -268,11 +256,11 @@ class ChangedListener
         $em     = $event->getEntityManager();
         $entity = $event->getCurrentEntity();
 
-        if (null === ($annotation = $this->resolver->getChangedAnnotation($em, $entity))) {
+        if (null === ($attribute = $this->resolver->getChangedAttribute($em, $entity))) {
             return;
         }
 
-        $preferred_changes = array_diff($annotation->getIgnoredFields(), $event->getMutatedFields());
+        $preferred_changes = array_diff($attribute->getIgnoredFields(), $event->getMutatedFields());
 
         // do something with them
     }

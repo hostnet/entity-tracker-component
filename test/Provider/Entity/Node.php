@@ -9,47 +9,39 @@ namespace Hostnet\Component\EntityTracker\Provider\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Node
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @var int
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     public $id;
 
-    /**
-     * @ORM\Column
-     * @var string
-     */
+    #[ORM\Column(type: 'string')]
     public $name;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Node", inversedBy="children")
      * @var Node
      */
+    #[ORM\ManyToOne(targetEntity: 'Node', inversedBy: 'children')]
     public $parent;
 
     /**
-     * @ORM\OneToMany(targetEntity="Node", mappedBy="parent")
      * @var Node[]
      */
+    #[ORM\OneToMany(targetEntity: 'Node', mappedBy: 'parent')]
     public $children;
 
     /**
-     * @ORM\OneToOne(targetEntity="Node", inversedBy="mirrored_by")
      * @var Node
      */
+    #[ORM\OneToOne(targetEntity: 'Node', inversedBy: 'mirrored_by')]
     public $mirror;
 
     /**
-     * @ORM\OneToOne(targetEntity="Node", mappedBy="mirror")
      * @var Node
      */
+    #[ORM\OneToOne(targetEntity: 'Node', mappedBy: 'mirror')]
     public $mirrored_by;
 
     /**

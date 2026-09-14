@@ -9,39 +9,27 @@ namespace Hostnet\Component\EntityTracker\Functional\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Author
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @var int
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column
-     * @var string
-     */
+    #[ORM\Column(type: 'string')]
     public $name;
 
     /**
-     * @ORM\Embedded(class="Address")
      * @var Address
      */
+    #[ORM\Embedded(class: 'Address')]
     public $address;
 
     /**
-     * @ORM\ManyToMany(
-     *     targetEntity="Book",
-     *     mappedBy="authors",
-     *     cascade={"persist"}
-     * )
      * @var Book[]
      */
+    #[ORM\ManyToMany(targetEntity: 'Book', mappedBy: 'authors', cascade: ['persist'])]
     public $books;
 
     /**

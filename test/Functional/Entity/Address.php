@@ -8,39 +8,22 @@ namespace Hostnet\Component\EntityTracker\Functional\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Embeddable
- */
+#[ORM\Embeddable]
 class Address
 {
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     * @var string
-     */
+    #[ORM\Column(type: 'string', nullable: true)]
     public $street;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @var int
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     public $house_number;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     * @var string
-     */
+    #[ORM\Column(type: 'string', nullable: true)]
     public $house_number_addition;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     * @var string
-     */
+    #[ORM\Column(type: 'string', nullable: true)]
     public $city;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     * @var string
-     */
+    #[ORM\Column(type: 'string', nullable: true)]
     public $country;
 
     /**

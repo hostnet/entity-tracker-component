@@ -9,23 +9,18 @@ namespace Hostnet\Component\EntityTracker\Provider\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class A
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @var int
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     public $id;
 
     /**
-     * @ORM\OneToMany(targetEntity="B", mappedBy="a", cascade={"persist"})
      * @var B[]|ArrayCollection
      */
+    #[ORM\OneToMany(targetEntity: 'B', mappedBy: 'a', cascade: ['persist'])]
     public $bees;
 
     public function __construct()

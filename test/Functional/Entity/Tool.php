@@ -8,32 +8,21 @@ namespace Hostnet\Component\EntityTracker\Functional\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Tool
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @var int
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     public $id;
 
     /**
-     * @ORM\ManyToOne(
-     *     targetEntity="Toolbox",
-     *     inversedBy="tools"
-     * )
      * @var Toolbox
      */
+    #[ORM\ManyToOne(targetEntity: 'Toolbox', inversedBy: 'tools')]
     public $toolbox;
 
-    /**
-     * @ORM\Column
-     * @var string
-     */
+    #[ORM\Column(type: 'string')]
     public $name;
 
     /**

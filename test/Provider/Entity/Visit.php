@@ -8,28 +8,21 @@ namespace Hostnet\Component\EntityTracker\Provider\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- */
+#[ORM\Entity]
 class Visit
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="datetime")
-     * @var \DateTime
-     */
+    #[ORM\Column(type: 'datetime')]
     private $date;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Visitor", inversedBy="visits")
      * @var Visitor
      */
+    #[ORM\ManyToOne(targetEntity: 'Visitor', inversedBy: 'visits')]
     private $visitor;
 
     /**

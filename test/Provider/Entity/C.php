@@ -8,24 +8,18 @@ namespace Hostnet\Component\EntityTracker\Provider\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- */
+#[ORM\Entity]
 class C
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     *
-     * @var int
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="B", inversedBy="cees")
      * @var C
      */
+    #[ORM\ManyToOne(targetEntity: 'B', inversedBy: 'cees')]
     public $b;
 
     public function __construct()

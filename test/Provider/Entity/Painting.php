@@ -8,23 +8,15 @@ namespace Hostnet\Component\EntityTracker\Provider\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Painting
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @var int
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     public $id;
 
-    /**
-     * @ORM\Column
-     * @var string
-     */
+    #[ORM\Column(type: 'string')]
     public $name;
 
     /**

@@ -4,13 +4,13 @@
     "license":           "MIT",
     "minimum-stability": "stable",
     "require": {
-        "php":                  "^8.3",
-        "doctrine/annotations": "1.*,>=1.2.0",
-        "doctrine/common":      "^3.4.4",
-        "doctrine/orm":         "^2.19.7",
-        "doctrine/persistence": "^2.5.7|^3.4.0",
-        "psr/log":              "^1.0.0|^2.0.0|^3.0.0",
-        "symfony/cache":        "^6.4|^7.4"
+        "php":                    "^8.3",
+        "doctrine/common":        "^3.4.4",
+        "doctrine/event-manager": "^1.2|^2.0",
+        "doctrine/orm":           "^2.19.7",
+        "doctrine/persistence":   "^2.5.7|^3.4.0",
+        "psr/log":                "^1.0.0|^2.0.0|^3.0.0",
+        "symfony/cache":          "^6.4|^7.4"
     },
     "require-dev": {
         "hostnet/database-test-lib": "^2.0.2",

@@ -9,30 +9,21 @@ namespace Hostnet\Component\EntityTracker\Provider\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- */
+#[ORM\Entity]
 class Visitor
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     *
-     * @var int
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string")
-     * @var string
-     */
+    #[ORM\Column(type: 'string')]
     private $name;
 
     /**
-     * @ORM\OneToMany(targetEntity="Visit", mappedBy="visitor", cascade={"persist"})
      * @var ArrayCollection|Visit[]
      */
+    #[ORM\OneToMany(targetEntity: 'Visit', mappedBy: 'visitor', cascade: ['persist'])]
     private $visits;
 
     /**

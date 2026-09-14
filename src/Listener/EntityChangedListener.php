@@ -6,10 +6,9 @@ declare(strict_types=1);
 
 namespace Hostnet\Component\EntityTracker\Listener;
 
-use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
-use Doctrine\ORM\Proxy\Proxy;
 use Doctrine\Persistence\ObjectManager;
+use Doctrine\Persistence\Proxy;
 use Hostnet\Component\EntityTracker\Attributes\Tracked;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Events;
@@ -22,7 +21,7 @@ use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 /**
- * Listener for entities that use the Tracked Annotation or attribute.
+ * Listener for entities that use the Tracked attribute.
  *
  * This listener will fire an "Events::ENTITY_CHANGED" event
  * per entity that is changed.
@@ -30,7 +29,7 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 class EntityChangedListener
 {
     public function __construct(
-        private EntityMetadataProvider $meta_annotation_provider,
+        private EntityMetadataProvider $meta_provider,
         private EntityMutationMetadataProvider $meta_mutation_provider,
         private ?LoggerInterface $logger = null,
         private CacheItemPoolInterface $is_tracked_cache = new ArrayAdapter()
@@ -38,7 +37,7 @@ class EntityChangedListener
         $this->logger = $logger ? : new NullLogger();
     }
 
-    private function isTracked(ObjectManager $em, mixed $entity): bool
+    private function isTracked(ObjectManager $em, object $entity): bool
     {
         $cache_key   = base64_encode('TRACKED-' . get_class($entity));
         $cached_item = $this->is_tracked_cache->getItem($cache_key);
@@ -47,11 +46,7 @@ class EntityChangedListener
             return $cached_item->get();
         }
 
-        if (null !== $this->meta_annotation_provider->getAttributeFromEntity(Tracked::class, $em, $entity)) {
-            return $this->save($cached_item, true);
-        }
-
-        if ($this->meta_annotation_provider->isTracked($em, $entity)) {
+        if (null !== $this->meta_provider->getAttributeFromEntity(Tracked::class, $em, $entity)) {
             return $this->save($cached_item, true);
         }
 
@@ -69,8 +64,8 @@ class EntityChangedListener
     /**
      * Pre Flush event callback
      *
-     * Checks if the entity contains an @Tracked (or derived)
-     * annotation or attribute. If so, it will attempt to calculate changes
+     * Checks if the entity contains a Tracked (or derived)
+     * attribute. If so, it will attempt to calculate changes
      * made and dispatch 'Events::ENTITY_CHANGED' with the current
      * and original entity states. Note that the original entity
      * is not managed.
@@ -114,12 +109,5 @@ class EntityChangedListener
                 }
             }
         }
-    }
-
-    /**
-     * @deprecated Will be removed when removing doctrine/annotations, will break entity-tracker-bundle otherwise.
-     */
-    public function prePersist(LifecycleEventArgs $event): void
-    {
     }
 }
