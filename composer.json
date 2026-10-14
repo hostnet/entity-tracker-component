@@ -20,6 +20,9 @@
         "phpspec/prophecy-phpunit":  "^2.5.0",
         "phpunit/phpunit":           "^9.4"
     },
+    "conflict": {
+        "symfony/var-exporter": ">=8.0"
+    },
     "autoload": {
         "psr-4": {
             "Hostnet\\Component\\EntityTracker\\": "src/"
