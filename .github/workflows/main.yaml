@@ -13,7 +13,8 @@ jobs:
     strategy:
       matrix:
         php-versions: ['8.3', '8.4']
-    name: PHP ${{ matrix.php-versions }}
+        doctrine-orm: ['^2.19.7', '^3.0']
+    name: PHP ${{ matrix.php-versions }} / doctrine/orm ${{ matrix.doctrine-orm }}
     steps:
       -   uses: actions/checkout@v4
       -   uses: shivammathur/setup-php@v2
@@ -26,8 +27,10 @@ jobs:
       -   uses: actions/cache@v4
           with:
             path: ${{ steps.composer-cache.outputs.dir }}
-            key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-            restore-keys: ${{ runner.os }}-composer-
+            key: ${{ runner.os }}-composer-${{ matrix.doctrine-orm }}-${{ hashFiles('**/composer.lock') }}
+            restore-keys: ${{ runner.os }}-composer-${{ matrix.doctrine-orm }}-
+      -   name: Require doctrine/orm ${{ matrix.doctrine-orm }}
+          run: composer require doctrine/orm:${{ matrix.doctrine-orm }} --no-update
       -   name: composer install
           run: composer install --no-progress --prefer-dist --optimize-autoloader
       -   run: sudo /etc/init.d/mysql start
