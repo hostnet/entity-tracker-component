@@ -27,7 +27,7 @@ jobs:
       -   uses: actions/cache@v4
           with:
             path: ${{ steps.composer-cache.outputs.dir }}
-            key: ${{ runner.os }}-composer-${{ matrix.doctrine-orm }}-${{ hashFiles('**/composer.lock') }}
+            key: ${{ runner.os }}-composer-${{ matrix.doctrine-orm }}-${{ hashFiles('**/composer.json') }}
             restore-keys: ${{ runner.os }}-composer-${{ matrix.doctrine-orm }}-
       -   name: Require doctrine/orm ${{ matrix.doctrine-orm }}
           run: composer require doctrine/orm:${{ matrix.doctrine-orm }} --no-update
@@ -36,5 +36,25 @@ jobs:
       -   run: sudo /etc/init.d/mysql start
       -   name: phpunit
           run: php vendor/bin/phpunit
+
+  phpcs:
+    runs-on: ubuntu-latest
+
+    steps:
+      -   uses: actions/checkout@v4
+      -   uses: shivammathur/setup-php@v2
+          with:
+            php-version: '8.3'
+      -   name: Get composer cache directory
+          id: composer-cache
+          run: |
+              echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      -   uses: actions/cache@v4
+          with:
+            path: ${{ steps.composer-cache.outputs.dir }}
+            key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+            restore-keys: ${{ runner.os }}-composer-
+      -   name: composer install
+          run: composer install --no-progress --prefer-dist --optimize-autoloader
       -   name: phpcs
           run: php vendor/bin/phpcs
