@@ -6,9 +6,8 @@ declare(strict_types=1);
 
 namespace Hostnet\Component\EntityTracker\Listener;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PreFlushEventArgs;
-use Doctrine\Persistence\ObjectManager;
-use Doctrine\Persistence\Proxy;
 use Hostnet\Component\EntityTracker\Attributes\Tracked;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Hostnet\Component\EntityTracker\Events;
@@ -37,7 +36,7 @@ class EntityChangedListener
         $this->logger = $logger ? : new NullLogger();
     }
 
-    private function isTracked(ObjectManager $em, object $entity): bool
+    private function isTracked(EntityManagerInterface $em, object $entity): bool
     {
         $cache_key   = base64_encode('TRACKED-' . get_class($entity));
         $cached_item = $this->is_tracked_cache->getItem($cache_key);
@@ -86,7 +85,7 @@ class EntityChangedListener
             }
 
             foreach ($updates as $entity) {
-                if ($entity instanceof Proxy && !$entity->__isInitialized()) {
+                if ($em->getUnitOfWork()->isUninitializedObject($entity)) {
                     continue;
                 }
 
