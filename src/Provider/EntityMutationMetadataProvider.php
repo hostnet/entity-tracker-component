@@ -9,7 +9,6 @@ namespace Hostnet\Component\EntityTracker\Provider;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\PersistentCollection;
 use Doctrine\ORM\UnitOfWork;
 use Psr\Log\LoggerInterface;
@@ -68,11 +67,11 @@ class EntityMutationMetadataProvider
         $associations = [];
 
         foreach ($metadata->getAssociationMappings() as $name => $mapping) {
-            if ($mapping['type'] === ClassMetadataInfo::ONE_TO_ONE && !$mapping['isOwningSide']) {
+            if ($mapping['type'] === ClassMetadata::ONE_TO_ONE && !$mapping['isOwningSide']) {
                 continue;
             }
 
-            if ($mapping['type'] & ClassMetadataInfo::TO_MANY) {
+            if ($mapping['type'] & ClassMetadata::TO_MANY) {
                 continue;
             }
             $associations[] = $name;
